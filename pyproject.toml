@@ -1,0 +1,17 @@
+[project]
+name = "seccomp-static-analyzer"
+version = "0.1.0"
+description = "Static analysis tool for extracting syscalls from ELF binaries to generate seccomp allowlists."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "pyelftools>=0.29",
+  "capstone>=5.0.0"
+]
+
+[project.scripts]
+seccomp-static-analyzer = "static_analysis.cli:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
