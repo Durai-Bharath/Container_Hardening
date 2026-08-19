@@ -1,0 +1,2 @@
+"""Static syscall analyzer package."""
+
