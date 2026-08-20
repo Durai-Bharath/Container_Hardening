@@ -85,6 +85,54 @@ class IndirectAndUnionTests(unittest.TestCase):
         self.assertEqual(len(entries), 1)
         self.assertEqual(entries[0].source, "direct")
 
+    def test_end_to_end_analyze_test_binary1(self):
+        mapper = SyscallMapper.create_default()
+        analyzer = StaticAnalyzer(mapper=mapper)
+        report = analyzer.analyze("static_analyzer/test/binary1")
+        self.assertEqual(len(report.binaries), 1)
+        res = report.binaries[0]
+        direct_nums = {d.syscall_number for d in res.direct_syscalls if d.syscall_number is not None}
+        # write(1), sched_yield(24), getpid(39), getppid(110), getpgid(121), getsid(124), gettid(186)
+        expected_direct = {1, 24, 39, 110, 121, 124, 186}
+        self.assertTrue(expected_direct.issubset(direct_nums))
+        unique_nums = {num for num, _ in res.final_unique_syscalls}
+        self.assertTrue(expected_direct.issubset(unique_nums))
+
+    def test_seccomp_profile_generation(self):
+        import json
+        from static_analyzer.seccomp_generator import generate_oci_seccomp_profile
+
+        profile_json = generate_oci_seccomp_profile(["write", "getpid", "exit"], architecture="x86_64")
+        data = json.loads(profile_json)
+        self.assertEqual(data["defaultAction"], "SCMP_ACT_ERRNO")
+        self.assertEqual(data["architectures"], ["SCMP_ARCH_X86_64"])
+        self.assertEqual(data["syscalls"][0]["names"], ["exit", "getpid", "write"])
+        self.assertEqual(data["syscalls"][0]["action"], "SCMP_ACT_ALLOW")
+
+    def test_main_run_generates_seccomp(self):
+        import json
+        import tempfile
+        from static_analyzer.main import run
+
+        with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=False) as json_f, \
+             tempfile.NamedTemporaryFile("w+", suffix=".txt", delete=False) as txt_f, \
+             tempfile.NamedTemporaryFile("w+", suffix=".json", delete=False) as sec_f:
+            ret = run(
+                input_path="static_analyzer/test/binary1",
+                glibc_callgraph=None,
+                musl_callgraph=None,
+                syscall_table=None,
+                json_out=json_f.name,
+                text_out=txt_f.name,
+                seccomp_out=sec_f.name,
+            )
+            self.assertEqual(ret, 0)
+            sec_data = json.loads(sec_f.read())
+            self.assertEqual(sec_data["defaultAction"], "SCMP_ACT_ERRNO")
+            names = set(sec_data["syscalls"][0]["names"])
+            expected = {"write", "getpid", "getppid", "gettid", "sched_yield", "getpgid", "getsid"}
+            self.assertTrue(expected.issubset(names))
+
 
 if __name__ == "__main__":
     unittest.main()

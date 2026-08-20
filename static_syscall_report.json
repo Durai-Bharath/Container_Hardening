@@ -1,0 +1,820 @@
+{
+  "input_path": "java",
+  "architecture": "x86_64",
+  "binaries": [
+    {
+      "binary": "java",
+      "architecture": "x86_64",
+      "elf_class": 64,
+      "elf_type": "ET_DYN",
+      "link_type": "dynamic",
+      "interpreter": "/lib/ld-musl-x86_64.so.1",
+      "imported_functions": [
+        {
+          "binary": "java",
+          "function": "__deregister_frame_info",
+          "source": "ELF_DYNAMIC_SYMBOL",
+          "library": null,
+          "symbol_type": "STT_NOTYPE",
+          "symbol_binding": "STB_WEAK"
+        },
+        {
+          "binary": "java",
+          "function": "_ITM_registerTMCloneTable",
+          "source": "ELF_DYNAMIC_SYMBOL",
+          "library": null,
+          "symbol_type": "STT_NOTYPE",
+          "symbol_binding": "STB_WEAK"
+        },
+        {
+          "binary": "java",
+          "function": "_ITM_deregisterTMCloneTable",
+          "source": "ELF_DYNAMIC_SYMBOL",
+          "library": null,
+          "symbol_type": "STT_NOTYPE",
+          "symbol_binding": "STB_WEAK"
+        },
+        {
+          "binary": "java",
+          "function": "JLI_Launch",
+          "source": "ELF_DYNAMIC_SYMBOL",
+          "library": null,
+          "symbol_type": "STT_FUNC",
+          "symbol_binding": "STB_GLOBAL"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "source": "ELF_DYNAMIC_SYMBOL",
+          "library": null,
+          "symbol_type": "STT_FUNC",
+          "symbol_binding": "STB_GLOBAL"
+        },
+        {
+          "binary": "java",
+          "function": "__register_frame_info",
+          "source": "ELF_DYNAMIC_SYMBOL",
+          "library": null,
+          "symbol_type": "STT_NOTYPE",
+          "symbol_binding": "STB_WEAK"
+        },
+        {
+          "binary": "java",
+          "function": "__cxa_finalize",
+          "source": "ELF_DYNAMIC_SYMBOL",
+          "library": null,
+          "symbol_type": "STT_FUNC",
+          "symbol_binding": "STB_WEAK"
+        }
+      ],
+      "direct_syscalls": [],
+      "indirect_syscalls": [
+        {
+          "binary": "java",
+          "function": "__deregister_frame_info",
+          "syscall_number": null,
+          "syscall_name": null,
+          "callgraph_path": [
+            "__deregister_frame_info"
+          ],
+          "resolution": "function-not-in-callgraph",
+          "classification": "INDIRECT_UNRESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "_ITM_registerTMCloneTable",
+          "syscall_number": null,
+          "syscall_name": null,
+          "callgraph_path": [
+            "_ITM_registerTMCloneTable"
+          ],
+          "resolution": "function-not-in-callgraph",
+          "classification": "INDIRECT_UNRESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "_ITM_deregisterTMCloneTable",
+          "syscall_number": null,
+          "syscall_name": null,
+          "callgraph_path": [
+            "_ITM_deregisterTMCloneTable"
+          ],
+          "resolution": "function-not-in-callgraph",
+          "classification": "INDIRECT_UNRESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "JLI_Launch",
+          "syscall_number": null,
+          "syscall_name": null,
+          "callgraph_path": [
+            "JLI_Launch"
+          ],
+          "resolution": "function-not-in-callgraph",
+          "classification": "INDIRECT_UNRESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 7,
+          "syscall_name": "poll",
+          "callgraph_path": [
+            "__libc_start_main",
+            "__init_libc",
+            "syscall(7)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 218,
+          "syscall_name": "set_tid_address",
+          "callgraph_path": [
+            "__libc_start_main",
+            "__init_libc",
+            "__init_tls",
+            "static_init_tls",
+            "__init_tp",
+            "syscall(218)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 9,
+          "syscall_name": "mmap",
+          "callgraph_path": [
+            "__libc_start_main",
+            "__init_libc",
+            "__init_tls",
+            "static_init_tls",
+            "syscall(9)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 2,
+          "syscall_name": "open",
+          "callgraph_path": [
+            "__libc_start_main",
+            "__init_libc",
+            "syscall(2)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 231,
+          "syscall_name": "exit_group",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "_Exit",
+            "syscall(231)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 60,
+          "syscall_name": "exit",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "_Exit",
+            "syscall(60)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 202,
+          "syscall_name": "futex",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "__lock",
+            "__futexwait",
+            "syscall(202)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 3,
+          "syscall_name": "close",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "__stdio_close",
+            "syscall(3)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 200,
+          "syscall_name": "tkill",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "pthread_cancel",
+            "pthread_kill",
+            "syscall(200)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 273,
+          "syscall_name": "set_robust_list",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "pthread_cancel",
+            "__pthread_exit",
+            "syscall(273)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 14,
+          "syscall_name": "rt_sigprocmask",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "pthread_cancel",
+            "__pthread_exit",
+            "__restore_sigs",
+            "syscall(14)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 228,
+          "syscall_name": "clock_gettime",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "pthread_cancel",
+            "__pthread_exit",
+            "__pthread_tsd_run_dtors",
+            "__pthread_rwlock_rdlock",
+            "__pthread_rwlock_timedrdlock",
+            "__timedwait",
+            "__timedwait_cp",
+            "__clock_gettime",
+            "syscall(228)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 96,
+          "syscall_name": "gettimeofday",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "pthread_cancel",
+            "__pthread_exit",
+            "__pthread_tsd_run_dtors",
+            "__pthread_rwlock_rdlock",
+            "__pthread_rwlock_timedrdlock",
+            "__timedwait",
+            "__timedwait_cp",
+            "__clock_gettime",
+            "syscall(96)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 13,
+          "syscall_name": "rt_sigaction",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "pthread_cancel",
+            "init_cancellation",
+            "__libc_sigaction",
+            "syscall(13)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 12,
+          "syscall_name": "brk",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "__aio_get_queue",
+            "calloc",
+            "__simple_calloc",
+            "__simple_malloc",
+            "__expand_heap",
+            "syscall(12)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 28,
+          "syscall_name": "madvise",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "__aio_get_queue",
+            "calloc",
+            "malloc",
+            "trim",
+            "__bin_chunk",
+            "__madvise",
+            "syscall(28)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 72,
+          "syscall_name": "fcntl",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "__aio_get_queue",
+            "fcntl",
+            "syscall(72)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 8,
+          "syscall_name": "lseek",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__stdio_exit",
+            "close_file",
+            "__stdio_seek",
+            "syscall(8)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 0,
+          "syscall_name": "read",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__stdio_exit",
+            "close_file",
+            "__stdio_read",
+            "syscall(0)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 19,
+          "syscall_name": "readv",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__stdio_exit",
+            "close_file",
+            "__stdio_read",
+            "syscall(19)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 11,
+          "syscall_name": "munmap",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__stdio_exit",
+            "close_file",
+            "wms_write",
+            "realloc",
+            "free",
+            "unmap_chunk",
+            "__munmap",
+            "syscall(11)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 25,
+          "syscall_name": "mremap",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__stdio_exit",
+            "close_file",
+            "wms_write",
+            "realloc",
+            "__mremap",
+            "syscall(25)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 20,
+          "syscall_name": "writev",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__stdio_exit",
+            "close_file",
+            "cookiewrite",
+            "cookieread",
+            "cookieseek",
+            "__stdio_write",
+            "syscall(20)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__libc_start_main",
+          "syscall_number": 16,
+          "syscall_name": "ioctl",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__stdio_exit",
+            "close_file",
+            "__stdout_write",
+            "syscall(16)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__register_frame_info",
+          "syscall_number": null,
+          "syscall_name": null,
+          "callgraph_path": [
+            "__register_frame_info"
+          ],
+          "resolution": "function-not-in-callgraph",
+          "classification": "INDIRECT_UNRESOLVED"
+        },
+        {
+          "binary": "java",
+          "function": "__cxa_finalize",
+          "syscall_number": null,
+          "syscall_name": null,
+          "callgraph_path": [
+            "__cxa_finalize"
+          ],
+          "resolution": "function-not-in-callgraph",
+          "classification": "INDIRECT_UNRESOLVED"
+        }
+      ],
+      "static_syscalls": [
+        {
+          "number": 0,
+          "name": "read",
+          "source": "indirect"
+        },
+        {
+          "number": 2,
+          "name": "open",
+          "source": "indirect"
+        },
+        {
+          "number": 3,
+          "name": "close",
+          "source": "indirect"
+        },
+        {
+          "number": 7,
+          "name": "poll",
+          "source": "indirect"
+        },
+        {
+          "number": 8,
+          "name": "lseek",
+          "source": "indirect"
+        },
+        {
+          "number": 9,
+          "name": "mmap",
+          "source": "indirect"
+        },
+        {
+          "number": 11,
+          "name": "munmap",
+          "source": "indirect"
+        },
+        {
+          "number": 12,
+          "name": "brk",
+          "source": "indirect"
+        },
+        {
+          "number": 13,
+          "name": "rt_sigaction",
+          "source": "indirect"
+        },
+        {
+          "number": 14,
+          "name": "rt_sigprocmask",
+          "source": "indirect"
+        },
+        {
+          "number": 16,
+          "name": "ioctl",
+          "source": "indirect"
+        },
+        {
+          "number": 19,
+          "name": "readv",
+          "source": "indirect"
+        },
+        {
+          "number": 20,
+          "name": "writev",
+          "source": "indirect"
+        },
+        {
+          "number": 25,
+          "name": "mremap",
+          "source": "indirect"
+        },
+        {
+          "number": 28,
+          "name": "madvise",
+          "source": "indirect"
+        },
+        {
+          "number": 60,
+          "name": "exit",
+          "source": "indirect"
+        },
+        {
+          "number": 72,
+          "name": "fcntl",
+          "source": "indirect"
+        },
+        {
+          "number": 96,
+          "name": "gettimeofday",
+          "source": "indirect"
+        },
+        {
+          "number": 200,
+          "name": "tkill",
+          "source": "indirect"
+        },
+        {
+          "number": 202,
+          "name": "futex",
+          "source": "indirect"
+        },
+        {
+          "number": 218,
+          "name": "set_tid_address",
+          "source": "indirect"
+        },
+        {
+          "number": 228,
+          "name": "clock_gettime",
+          "source": "indirect"
+        },
+        {
+          "number": 231,
+          "name": "exit_group",
+          "source": "indirect"
+        },
+        {
+          "number": 273,
+          "name": "set_robust_list",
+          "source": "indirect"
+        }
+      ],
+      "final_unique_syscalls": [
+        [
+          0,
+          "read"
+        ],
+        [
+          2,
+          "open"
+        ],
+        [
+          3,
+          "close"
+        ],
+        [
+          7,
+          "poll"
+        ],
+        [
+          8,
+          "lseek"
+        ],
+        [
+          9,
+          "mmap"
+        ],
+        [
+          11,
+          "munmap"
+        ],
+        [
+          12,
+          "brk"
+        ],
+        [
+          13,
+          "rt_sigaction"
+        ],
+        [
+          14,
+          "rt_sigprocmask"
+        ],
+        [
+          16,
+          "ioctl"
+        ],
+        [
+          19,
+          "readv"
+        ],
+        [
+          20,
+          "writev"
+        ],
+        [
+          25,
+          "mremap"
+        ],
+        [
+          28,
+          "madvise"
+        ],
+        [
+          60,
+          "exit"
+        ],
+        [
+          72,
+          "fcntl"
+        ],
+        [
+          96,
+          "gettimeofday"
+        ],
+        [
+          200,
+          "tkill"
+        ],
+        [
+          202,
+          "futex"
+        ],
+        [
+          218,
+          "set_tid_address"
+        ],
+        [
+          228,
+          "clock_gettime"
+        ],
+        [
+          231,
+          "exit_group"
+        ],
+        [
+          273,
+          "set_robust_list"
+        ]
+      ],
+      "summary": {
+        "direct_syscall_count": 0,
+        "indirect_syscall_count": 24,
+        "unique_syscall_count": 24,
+        "unresolved_direct_syscall_count": 0,
+        "imported_function_count": 7,
+        "resolved_imported_function_count": 1,
+        "unresolved_imported_function_count": 6
+      }
+    }
+  ],
+  "global_unique_syscall_count": 24
+}

@@ -47,6 +47,21 @@ class CallGraphTests(unittest.TestCase):
         graph.add_edge("b", "syscall(1)")
         self.assertEqual(graph.get_syscalls_from_function("a"), {1})
 
+    def test_arrow_separator_with_inline_colon_asm(self):
+        data = "\n".join(
+            [
+                'funcA->asm "mov %fs:0,$0", "=r"',
+                "funcA->helper",
+                "helper->syscall(42)",
+            ]
+        )
+        with tempfile.NamedTemporaryFile("w+", delete=False) as handle:
+            handle.write(data)
+            path = handle.name
+
+        graph = CallGraph.from_file(path)
+        self.assertEqual(graph.get_syscalls_from_function("funcA"), {42})
+
 
 if __name__ == "__main__":
     unittest.main()

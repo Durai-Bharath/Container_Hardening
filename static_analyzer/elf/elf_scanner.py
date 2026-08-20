@@ -31,8 +31,15 @@ class ELFScanner:
 
     def discover(self, root: str) -> List[ELFMetadata]:
         matches: List[ELFMetadata] = []
+        if os.path.isfile(root):
+            if self.is_elf(root):
+                metadata = self.extract_metadata(root)
+                if metadata is not None:
+                    matches.append(metadata)
+            return matches
+
         for current_root, _, files in os.walk(root):
-            for file_name in files:
+            for file_name in sorted(files):
                 path = os.path.join(current_root, file_name)
                 if not self.is_elf(path):
                     continue

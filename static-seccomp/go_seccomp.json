@@ -1,0 +1,42 @@
+{
+  "defaultAction": "SCMP_ACT_ERRNO",
+  "architectures": [
+    "SCMP_ARCH_X86_64"
+  ],
+  "syscalls": [
+    {
+      "names": [
+        "arch_prctl",
+        "clock_gettime",
+        "clone",
+        "close",
+        "exit",
+        "exit_group",
+        "futex",
+        "getpid",
+        "gettid",
+        "kill",
+        "madvise",
+        "mincore",
+        "mmap",
+        "munmap",
+        "nanosleep",
+        "openat",
+        "pipe2",
+        "read",
+        "rt_sigaction",
+        "rt_sigprocmask",
+        "rt_sigreturn",
+        "sched_getaffinity",
+        "sched_yield",
+        "sigaltstack",
+        "tgkill",
+        "timer_create",
+        "timer_delete",
+        "timer_settime",
+        "write"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    }
+  ]
+}

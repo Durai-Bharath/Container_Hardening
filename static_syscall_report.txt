@@ -1,0 +1,75 @@
+STATIC SYSCALL ANALYSIS
+=======================
+Input: java
+
+Binary: java
+Architecture: x86_64
+ELF Class: 64
+ELF Type: ET_DYN
+Linking: dynamic
+
+DIRECT SYSCALLS
+---------------
+(none)
+
+INDIRECT SYSCALLS
+-----------------
+7    poll                 <- __libc_start_main | __libc_start_main -> __init_libc -> syscall(7)
+218  set_tid_address      <- __libc_start_main | __libc_start_main -> __init_libc -> __init_tls -> static_init_tls -> __init_tp -> syscall(218)
+9    mmap                 <- __libc_start_main | __libc_start_main -> __init_libc -> __init_tls -> static_init_tls -> syscall(9)
+2    open                 <- __libc_start_main | __libc_start_main -> __init_libc -> syscall(2)
+231  exit_group           <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> _Exit -> syscall(231)
+60   exit                 <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> _Exit -> syscall(60)
+202  futex                <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __funcs_on_exit -> __lock -> __futexwait -> syscall(202)
+3    close                <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __funcs_on_exit -> __stdio_close -> syscall(3)
+200  tkill                <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __funcs_on_exit -> __stdio_close -> __aio_close -> aio_cancel -> pthread_cancel -> pthread_kill -> syscall(200)
+273  set_robust_list      <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __funcs_on_exit -> __stdio_close -> __aio_close -> aio_cancel -> pthread_cancel -> __pthread_exit -> syscall(273)
+14   rt_sigprocmask       <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __funcs_on_exit -> __stdio_close -> __aio_close -> aio_cancel -> pthread_cancel -> __pthread_exit -> __restore_sigs -> syscall(14)
+228  clock_gettime        <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __funcs_on_exit -> __stdio_close -> __aio_close -> aio_cancel -> pthread_cancel -> __pthread_exit -> __pthread_tsd_run_dtors -> __pthread_rwlock_rdlock -> __pthread_rwlock_timedrdlock -> __timedwait -> __timedwait_cp -> __clock_gettime -> syscall(228)
+96   gettimeofday         <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __funcs_on_exit -> __stdio_close -> __aio_close -> aio_cancel -> pthread_cancel -> __pthread_exit -> __pthread_tsd_run_dtors -> __pthread_rwlock_rdlock -> __pthread_rwlock_timedrdlock -> __timedwait -> __timedwait_cp -> __clock_gettime -> syscall(96)
+13   rt_sigaction         <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __funcs_on_exit -> __stdio_close -> __aio_close -> aio_cancel -> pthread_cancel -> init_cancellation -> __libc_sigaction -> syscall(13)
+12   brk                  <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __funcs_on_exit -> __stdio_close -> __aio_close -> aio_cancel -> __aio_get_queue -> calloc -> __simple_calloc -> __simple_malloc -> __expand_heap -> syscall(12)
+28   madvise              <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __funcs_on_exit -> __stdio_close -> __aio_close -> aio_cancel -> __aio_get_queue -> calloc -> malloc -> trim -> __bin_chunk -> __madvise -> syscall(28)
+72   fcntl                <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __funcs_on_exit -> __stdio_close -> __aio_close -> aio_cancel -> __aio_get_queue -> fcntl -> syscall(72)
+8    lseek                <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __stdio_exit -> close_file -> __stdio_seek -> syscall(8)
+0    read                 <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __stdio_exit -> close_file -> __stdio_read -> syscall(0)
+19   readv                <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __stdio_exit -> close_file -> __stdio_read -> syscall(19)
+11   munmap               <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __stdio_exit -> close_file -> wms_write -> realloc -> free -> unmap_chunk -> __munmap -> syscall(11)
+25   mremap               <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __stdio_exit -> close_file -> wms_write -> realloc -> __mremap -> syscall(25)
+20   writev               <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __stdio_exit -> close_file -> cookiewrite -> cookieread -> cookieseek -> __stdio_write -> syscall(20)
+16   ioctl                <- __libc_start_main | __libc_start_main -> libc_start_main_stage2 -> exit -> __stdio_exit -> close_file -> __stdout_write -> syscall(16)
+
+FINAL STATIC SYSCALL SET
+------------------------
+0    read
+2    open
+3    close
+7    poll
+8    lseek
+9    mmap
+11   munmap
+12   brk
+13   rt_sigaction
+14   rt_sigprocmask
+16   ioctl
+19   readv
+20   writev
+25   mremap
+28   madvise
+60   exit
+72   fcntl
+96   gettimeofday
+200  tkill
+202  futex
+218  set_tid_address
+228  clock_gettime
+231  exit_group
+273  set_robust_list
+
+Direct syscall count: 0
+Indirect syscall count: 24
+Unique syscall count: 24
+Unresolved direct syscall count: 0
+Imported function count: 7
+Resolved imported function count: 1
+Unresolved imported function count: 6

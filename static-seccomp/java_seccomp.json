@@ -1,0 +1,37 @@
+{
+  "defaultAction": "SCMP_ACT_ERRNO",
+  "architectures": [
+    "SCMP_ARCH_X86_64"
+  ],
+  "syscalls": [
+    {
+      "names": [
+        "brk",
+        "clock_gettime",
+        "close",
+        "exit",
+        "exit_group",
+        "fcntl",
+        "futex",
+        "gettimeofday",
+        "ioctl",
+        "lseek",
+        "madvise",
+        "mmap",
+        "mremap",
+        "munmap",
+        "open",
+        "poll",
+        "read",
+        "readv",
+        "rt_sigaction",
+        "rt_sigprocmask",
+        "set_robust_list",
+        "set_tid_address",
+        "tkill",
+        "writev"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    }
+  ]
+}

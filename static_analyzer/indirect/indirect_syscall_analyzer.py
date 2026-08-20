@@ -41,7 +41,8 @@ class IndirectSyscallAnalyzer:
         records: List[IndirectSyscallRecord] = []
 
         for imported in imports:
-            function = imported.function
+            raw_function = imported.function
+            function = self._resolve_callgraph_function_name(raw_function, analyzer)
             if analyzer is None:
                 reason = (
                     "musl call graph unavailable"
@@ -51,24 +52,24 @@ class IndirectSyscallAnalyzer:
                 records.append(
                     IndirectSyscallRecord(
                         binary=metadata.path,
-                        function=function,
+                        function=raw_function,
                         syscall_number=None,
                         syscall_name=None,
-                        callgraph_path=[function],
+                        callgraph_path=[raw_function],
                         resolution=reason,
                         classification="INDIRECT_UNRESOLVED",
                     )
                 )
                 continue
 
-            if not analyzer.has_function(function):
+            if function is None or not analyzer.has_function(function):
                 records.append(
                     IndirectSyscallRecord(
                         binary=metadata.path,
-                        function=function,
+                        function=raw_function,
                         syscall_number=None,
                         syscall_name=None,
-                        callgraph_path=[function],
+                        callgraph_path=[raw_function],
                         resolution="function-not-in-callgraph",
                         classification="INDIRECT_UNRESOLVED",
                     )
@@ -80,10 +81,10 @@ class IndirectSyscallAnalyzer:
                 records.append(
                     IndirectSyscallRecord(
                         binary=metadata.path,
-                        function=function,
+                        function=raw_function,
                         syscall_number=None,
                         syscall_name=None,
-                        callgraph_path=[function],
+                        callgraph_path=[raw_function],
                         resolution="unresolved",
                         classification="INDIRECT_UNRESOLVED",
                     )
@@ -91,26 +92,55 @@ class IndirectSyscallAnalyzer:
                 continue
 
             for syscall in syscall_paths:
+                call_path = [raw_function] + (
+                    syscall.path[1:] if syscall.path and syscall.path[0] == function else syscall.path
+                )
                 records.append(
                     IndirectSyscallRecord(
                         binary=metadata.path,
-                        function=function,
+                        function=raw_function,
                         syscall_number=syscall.number,
                         syscall_name=self.mapper.name_for(
                             syscall.number, metadata.architecture
                         ),
-                        callgraph_path=syscall.path,
+                        callgraph_path=call_path,
                         resolution="static",
                         classification="INDIRECT_RESOLVED",
                     )
                 )
         return imports, records
 
+    @staticmethod
+    def _resolve_callgraph_function_name(function: str, analyzer) -> Optional[str]:
+        if analyzer is None:
+            return None
+        candidates = [function]
+        if "@" in function:
+            candidates.append(function.split("@", 1)[0])
+        clean = candidates[-1]
+        if clean.startswith("__") and len(clean) > 2:
+            candidates.append(clean[2:])
+        elif clean.startswith("_") and len(clean) > 1:
+            candidates.append(clean[1:])
+        else:
+            candidates.append("__" + clean)
+        if clean.endswith("64"):
+            candidates.append(clean[:-2])
+
+        for cand in candidates:
+            if analyzer.has_function(cand):
+                return cand
+        return None
+
     def _select_analyzer(self, libc: str):
         if libc == "glibc":
             return self.glibc_analyzer if self.glibc_analyzer.available() else None
         if libc == "musl":
             return self.musl_analyzer if self.musl_analyzer.available() else None
+        if self.glibc_analyzer.available():
+            return self.glibc_analyzer
+        if self.musl_analyzer.available():
+            return self.musl_analyzer
         return None
 
     @staticmethod
@@ -123,5 +153,5 @@ class IndirectSyscallAnalyzer:
             return "glibc"
         if metadata.link_type == "static":
             return "static"
-        return "unknown"
+        return "glibc" if metadata.is_dynamic else "unknown"
 

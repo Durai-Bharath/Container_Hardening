@@ -24,7 +24,7 @@ class CallGraph:
     @classmethod
     def from_file(cls, path: str, separator: Optional[str] = None) -> "CallGraph":
         graph = cls()
-        separators = [separator] if separator else [":", "->"]
+        separators = [separator] if separator else ["->", ":"]
         with open(path, "r", encoding="utf-8") as handle:
             for raw_line in handle:
                 line = raw_line.strip()
