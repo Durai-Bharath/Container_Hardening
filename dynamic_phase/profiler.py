@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable, Optional, Set
 
-from dynamic_phase.events import SyscallEvent
+from common.events import SyscallEvent
 
 
 @dataclass(frozen=True)

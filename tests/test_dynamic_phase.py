@@ -113,24 +113,37 @@ class FakeRunner:
 
 
 class ControllerLoopTests(unittest.TestCase):
-    def test_daemon_profiling_window_does_not_keep_iterating(self):
+    def test_daemon_discovery_is_followed_by_restricted_validation(self):
         runner = FakeRunner(
-            [ContainerResult("container-1", -1, "profiling window elapsed; container still running", True)]
+            [
+                ContainerResult("container-1", -1, "profiling window elapsed; container still running", True),
+                ContainerResult("container-2", -1, "profiling window elapsed; container still running", True),
+            ]
         )
-        collector = FakeCollector([[SyscallEvent(1.0, "read"), SyscallEvent(1.1, "write")]])
+        collector_runs = [
+            [SyscallEvent(1.0, "read"), SyscallEvent(1.1, "write")],
+            [SyscallEvent(2.0, "read"), SyscallEvent(2.1, "write")],
+        ]
+
+        def factory() -> FakeCollector:
+            return FakeCollector([collector_runs.pop(0)])
+
         result = DynamicAnalysisController(
             runner=runner,
-            collector_factory=lambda: collector,
+            collector_factory=factory,
             max_iterations=5,
             timeout=1.0,
         ).analyze("nginx:latest", {"read", "write", "open"}, ["nginx"])
-        self.assertEqual(len(result.iterations), 1)
+        self.assertEqual(len(result.iterations), 2)
+        self.assertEqual(result.iterations[0].phase, "discovery")
+        self.assertEqual(result.iterations[1].phase, "validation")
         self.assertTrue(result.iterations[0].timed_out)
         self.assertIsNone(result.iterations[0].added_syscall)
+        self.assertTrue(result.iterations[1].timed_out)
         self.assertIsNone(result.unresolved_failure)
         self.assertEqual(result.dynamic_syscalls, ("read", "write"))
-        self.assertEqual(collector.bound, ["container-1"])
-        self.assertEqual(runner.started, ["container-1"])
+        self.assertEqual(result.missing_syscalls, ())
+        self.assertEqual(runner.started, ["container-1", "container-2"])
 
     def test_successful_exit_with_missing_syscall_continues(self):
         runner = FakeRunner(

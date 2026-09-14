@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from statistics import fmean, pstdev
 from typing import Iterable, List, Optional, Sequence, Tuple
 
-from dynamic_phase.events import SyscallEvent
+from common.events import SyscallEvent
 
 
 @dataclass(frozen=True)

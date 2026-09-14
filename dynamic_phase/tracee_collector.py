@@ -8,7 +8,7 @@ import time
 import uuid
 from typing import Any, Mapping, Optional, Sequence
 
-from dynamic_phase.events import SyscallEvent
+from common.events import SyscallEvent
 
 
 class TraceeError(RuntimeError):

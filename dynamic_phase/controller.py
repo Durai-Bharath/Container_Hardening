@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Sequence, Set
 
 from dynamic_phase.docker_runner import ContainerResult, DockerRunner
-from dynamic_phase.events import SyscallEvent
+from common.events import SyscallEvent
 from dynamic_phase.profiler import DynamicProfiler
 from dynamic_phase.tracee_collector import TraceeCollector
 from static_analyzer.seccomp_generator import generate_oci_seccomp_profile
@@ -16,6 +16,7 @@ from static_analyzer.seccomp_generator import generate_oci_seccomp_profile
 @dataclass(frozen=True)
 class DynamicIteration:
     iteration: int
+    phase: str
     candidate_syscalls: tuple[str, ...]
     observed_syscalls: tuple[str, ...]
     exit_code: int
@@ -29,6 +30,7 @@ class DynamicAnalysisResult:
     dynamic_syscalls: tuple[str, ...]
     initialize_syscalls: tuple[str, ...]
     iterations: tuple[DynamicIteration, ...]
+    missing_syscalls: tuple[str, ...] = ()
     unresolved_failure: str | None = None
 
 
@@ -38,13 +40,11 @@ class DynamicAnalysisController:
         runner: DockerRunner | None = None,
         collector_factory: Callable[[], TraceeCollector] = TraceeCollector,
         profiler: DynamicProfiler | None = None,
-        max_iterations: int = 10,
         timeout: float = 60.0,
     ) -> None:
         self.runner = runner or DockerRunner()
         self.collector_factory = collector_factory
         self.profiler = profiler or DynamicProfiler()
-        self.max_iterations = max_iterations
         self.timeout = timeout
 
     def analyze(
@@ -54,68 +54,91 @@ class DynamicAnalysisController:
         command: Sequence[str],
         architecture: str = "x86_64",
     ) -> DynamicAnalysisResult:
-        candidate = set(static_syscalls)
-        observed: Set[str] = set()
-        iterations = []
-        unresolved: str | None = None
+        static = set(static_syscalls)
+        iterations: list[DynamicIteration] = []
         with tempfile.TemporaryDirectory(prefix="dynamic-seccomp-") as directory:
-            for number in range(1, self.max_iterations + 1):
-                profile = Path(directory) / f"candidate-{number}.json"
-                print(profile)
-                profile.write_text(
-                    generate_oci_seccomp_profile(candidate, architecture), encoding="utf-8"
+            discovery_result, discovery_events = self._run_once(
+                image, command, None
+            )
+            observed = self.profiler.profile(discovery_events).observed_syscalls
+            missing = observed - static
+            initialize = static | observed
+            iterations.append(
+                self._iteration(
+                    1, "discovery", static, observed, discovery_result, missing
                 )
-                container_id = self.runner.create(image, str(profile), command)
-                collector = self.collector_factory()
-                try:
-                    # Tracee must be ready before the target starts to capture initialization.
-                    collector.start(container_id)
-                    self.runner.start(container_id)
-                    result = self.runner.wait(container_id, self.timeout, remove=False)
-                    events = collector.stop()
-                    self.runner.remove(container_id)
-                except Exception:
-                    if collector.process is not None:
-                        collector.stop()
-                    self.runner.remove(container_id)
-                    raise
-                current = self.profiler.profile(events).observed_syscalls
-                observed.update(current)
-                added = self._find_missing_syscall(current, candidate)
-                iterations.append(
-                    DynamicIteration(
-                        iteration=number,
-                        candidate_syscalls=tuple(sorted(candidate)),
-                        observed_syscalls=tuple(sorted(current)),
-                        exit_code=result.exit_code,
-                        timed_out=result.timed_out,
-                        added_syscall=added,
-                        logs=result.logs,
-                    )
+            )
+
+            profile = Path(directory) / "final.json"
+            profile.write_text(
+                generate_oci_seccomp_profile(initialize, architecture), encoding="utf-8"
+            )
+            validation_result, validation_events = self._run_once(
+                image, command, str(profile)
+            )
+            validation_observed = self.profiler.profile(validation_events).observed_syscalls
+            validation_missing = validation_observed - initialize
+            iterations.append(
+                self._iteration(
+                    2,
+                    "validation",
+                    initialize,
+                    validation_observed,
+                    validation_result,
+                    validation_missing,
                 )
-                if result.exit_code == 0 and not result.timed_out and added is None:
-                    break
-                if result.timed_out and added is None:
-                    # Daemon workload: container ran until timeout with all observed
-                    # syscalls already in the candidate set — treat as clean success.
-                    break
-                if added is None:
-                    unresolved = result.logs or f"container exited with code {result.exit_code}"
-                    break
-                candidate.add(added)
-        initialize = candidate | observed
+            )
+            unresolved = None
+            if validation_result.exit_code != 0 and not validation_result.timed_out:
+                unresolved = validation_result.logs or (
+                    f"restricted container exited with code {validation_result.exit_code}"
+                )
+        observed.update(validation_observed)
         return DynamicAnalysisResult(
             dynamic_syscalls=tuple(sorted(observed)),
             initialize_syscalls=tuple(sorted(initialize)),
             iterations=tuple(iterations),
+            missing_syscalls=tuple(sorted(missing)),
             unresolved_failure=unresolved,
         )
 
     @staticmethod
-    def _find_missing_syscall(observed: Set[str], candidate: Set[str]) -> str | None:
-        missing = sorted(observed - candidate)
-        return missing[0] if missing else None
+    def _iteration(
+        number: int,
+        phase: str,
+        candidate: Set[str],
+        observed: Set[str],
+        result: ContainerResult,
+        missing: Set[str],
+    ) -> DynamicIteration:
+        return DynamicIteration(
+            iteration=number,
+            phase=phase,
+            candidate_syscalls=tuple(sorted(candidate)),
+            observed_syscalls=tuple(sorted(observed)),
+            exit_code=result.exit_code,
+            timed_out=result.timed_out,
+            added_syscall=sorted(missing)[0] if missing else None,
+            logs=result.logs,
+        )
 
-
-def write_result(result: DynamicAnalysisResult, path: str) -> None:
-    Path(path).write_text(json.dumps(asdict(result), indent=2) + "\n", encoding="utf-8")
+    def _run_once(
+        self,
+        image: str,
+        command: Sequence[str],
+        seccomp_profile: str | None,
+    ) -> tuple[ContainerResult, list[SyscallEvent]]:
+        container_id = self.runner.create(image, seccomp_profile, command)
+        collector = self.collector_factory()
+        try:
+            collector.start(container_id)
+            self.runner.start(container_id)
+            result = self.runner.wait(container_id, self.timeout, remove=False)
+            events = collector.stop()
+            self.runner.remove(container_id)
+            return result, events
+        except Exception:
+            if collector.process is not None:
+                collector.stop()
+            self.runner.remove(container_id)
+            raise
