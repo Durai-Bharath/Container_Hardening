@@ -72,6 +72,87 @@ Example output sections:
 - `FINAL STATIC SYSCALL SET`
 - summary counts
 
+## Dynamic and running-phase profiling
+
+The `dynamic_phase/` package consumes newline-delimited JSON syscall events. This
+keeps the profiling and segmentation algorithms independent of the event collector;
+an eBPF/BCC or libbpf agent can emit the same schema later.
+
+Each event requires `timestamp` (or `time`) and `syscall` (or `name`). Optional
+fields are `number`, `arguments` (or `args`), `pid`, and `process` (or `comm`).
+Events are sorted by timestamp before processing.
+
+Run dynamic profiling only from an existing Tracee JSONL trace:
+
+```bash
+python3 -m dynamic_phase.main \
+  --trace syscall_events.jsonl \
+  --static-report static_syscall_report.json \
+  --output dynamic_phase_report.json
+```
+
+Run running-phase segmentation separately from the same trace:
+
+```bash
+python3 -m dynamic_phase.main \
+  --running-trace syscall_events.jsonl \
+  --output running_phase_report.json \
+  --window-seconds 0.001 \
+  --warmup 5 \
+  --frequency-weight 0.5 \
+  --bigram-weight 0.5
+```
+
+Run the real Docker/Tracee dynamic analysis directly against an image:
+
+```bash
+python3 -m dynamic_phase.main \
+  --image nginx:latest \
+  --command "nginx -g 'daemon off;'" \
+  --static-report static_syscall_report.json \
+  --output dynamic_phase_report.json \
+  --max-iterations 10 \
+  --timeout 60
+```
+
+`--timeout` is the per-run profiling window, not a crash. Workloads such as
+`nginx -g 'daemon off;'` never exit, so the window always ends with the
+container still running. A new iteration is started only when Tracee observed a
+syscall that is not already in the candidate allowlist. If that set is already
+complete, the report correctly contains a single iteration.
+
+For hosts where Docker requires `sudo`, pass the complete command prefix:
+
+```bash
+python3 -m dynamic_phase.main \
+  --image nginx:latest \
+  --command "nginx -g 'daemon off;'" \
+  --static-report static_syscall_report.json \
+  --docker-command "sudo docker"
+```
+
+The controller starts Tracee first (`--scope container=new`, with the Docker
+socket mounted so container IDs can be resolved), then creates the target with
+the candidate OCI profile. That order captures initialization syscalls; attaching
+Tracee after the target is already running misses them and makes the loop stop
+at iteration 1. After the profiling window, the container is removed and rebuilt
+only when the trace contains a syscall outside the current allowlist. A failed
+run with no missing observed syscall is reported as unresolved instead of
+blindly widening the profile.
+
+Run the opt-in real integration test with:
+
+```bash
+RUN_TRACE_INTEGRATION=1 pytest -q tests/test_tracee_integration.py
+```
+
+The dynamic report contains only the observed runtime syscall set (D-SF) and
+the static/runtime initialization union (I-SF). The running-phase report
+contains time windows, frequency and bigram features, dissimilarity scores, the
+adaptive Page-Hinkley segmentation point, and the steady-state syscall set
+(R-SF). This separation also allows the running-phase algorithm to be tested
+against captured traces without rerunning Docker or Tracee.
+
 ## Notes on correctness
 
 The implementation is intentionally conservative:

@@ -43,6 +43,11 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         default="seccomp.json",
         help="Output OCI seccomp JSON profile path (default: seccomp.json)",
     )
+    parser.add_argument(
+        "--baseline-syscalls",
+        default=None,
+        help="Path to JSON array of baseline syscalls to inject",
+    )
     return parser
 
 
@@ -54,6 +59,7 @@ def run(
     json_out: str,
     text_out: str,
     seccomp_out: Optional[str] = "seccomp.json",
+    baseline_syscalls: Optional[str] = None,
 ) -> int:
     mapper = SyscallMapper.create_default(custom_table_path=syscall_table)
     analyzer = StaticAnalyzer(
@@ -62,6 +68,19 @@ def run(
         musl_callgraph_path=musl_callgraph,
     )
     report = analyzer.analyze(input_path=input_path)
+
+    if baseline_syscalls:
+        import json
+        with open(baseline_syscalls) as f:
+            baselines = json.load(f)
+        if report.binaries:
+            target_binary = report.binaries[0]
+            existing_names = {name for _, name in target_binary.final_unique_syscalls if name}
+            for name in baselines:
+                if name not in existing_names:
+                    target_binary.final_unique_syscalls.append((999, name))
+            target_binary.final_unique_syscalls.sort(key=lambda x: (x[0] if x[0] is not None else 9999, x[1] or ""))
+
     json_payload = Reporter.to_json(report)
     text_payload = Reporter.to_text(report)
 
@@ -97,4 +116,5 @@ def main() -> int:
         json_out=args.json_out,
         text_out=args.text_out,
         seccomp_out=args.seccomp_out,
+        baseline_syscalls=args.baseline_syscalls,
     )

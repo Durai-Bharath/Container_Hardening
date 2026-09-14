@@ -1,9 +1,9 @@
 {
-  "input_path": "java",
+  "input_path": "Binaries/java",
   "architecture": "x86_64",
   "binaries": [
     {
-      "binary": "java",
+      "binary": "Binaries/java",
       "architecture": "x86_64",
       "elf_class": 64,
       "elf_type": "ET_DYN",
@@ -11,7 +11,7 @@
       "interpreter": "/lib/ld-musl-x86_64.so.1",
       "imported_functions": [
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__deregister_frame_info",
           "source": "ELF_DYNAMIC_SYMBOL",
           "library": null,
@@ -19,7 +19,7 @@
           "symbol_binding": "STB_WEAK"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "_ITM_registerTMCloneTable",
           "source": "ELF_DYNAMIC_SYMBOL",
           "library": null,
@@ -27,7 +27,7 @@
           "symbol_binding": "STB_WEAK"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "_ITM_deregisterTMCloneTable",
           "source": "ELF_DYNAMIC_SYMBOL",
           "library": null,
@@ -35,7 +35,7 @@
           "symbol_binding": "STB_WEAK"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "JLI_Launch",
           "source": "ELF_DYNAMIC_SYMBOL",
           "library": null,
@@ -43,7 +43,7 @@
           "symbol_binding": "STB_GLOBAL"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
           "source": "ELF_DYNAMIC_SYMBOL",
           "library": null,
@@ -51,7 +51,7 @@
           "symbol_binding": "STB_GLOBAL"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__register_frame_info",
           "source": "ELF_DYNAMIC_SYMBOL",
           "library": null,
@@ -59,7 +59,7 @@
           "symbol_binding": "STB_WEAK"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__cxa_finalize",
           "source": "ELF_DYNAMIC_SYMBOL",
           "library": null,
@@ -70,7 +70,7 @@
       "direct_syscalls": [],
       "indirect_syscalls": [
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__deregister_frame_info",
           "syscall_number": null,
           "syscall_name": null,
@@ -81,7 +81,7 @@
           "classification": "INDIRECT_UNRESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "_ITM_registerTMCloneTable",
           "syscall_number": null,
           "syscall_name": null,
@@ -92,7 +92,7 @@
           "classification": "INDIRECT_UNRESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "_ITM_deregisterTMCloneTable",
           "syscall_number": null,
           "syscall_name": null,
@@ -103,7 +103,7 @@
           "classification": "INDIRECT_UNRESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "JLI_Launch",
           "syscall_number": null,
           "syscall_name": null,
@@ -114,20 +114,35 @@
           "classification": "INDIRECT_UNRESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
-          "syscall_number": 7,
-          "syscall_name": "poll",
+          "syscall_number": 2,
+          "syscall_name": "open",
           "callgraph_path": [
             "__libc_start_main",
             "__init_libc",
-            "syscall(7)"
+            "syscall(2)"
           ],
           "resolution": "static",
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
+          "function": "__libc_start_main",
+          "syscall_number": 9,
+          "syscall_name": "mmap",
+          "callgraph_path": [
+            "__libc_start_main",
+            "__init_libc",
+            "__init_tls",
+            "static_init_tls",
+            "syscall(9)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
           "syscall_number": 218,
           "syscall_name": "set_tid_address",
@@ -143,82 +158,20 @@
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
-          "syscall_number": 9,
-          "syscall_name": "mmap",
+          "syscall_number": 7,
+          "syscall_name": "poll",
           "callgraph_path": [
             "__libc_start_main",
             "__init_libc",
-            "__init_tls",
-            "static_init_tls",
-            "syscall(9)"
+            "syscall(7)"
           ],
           "resolution": "static",
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
-          "function": "__libc_start_main",
-          "syscall_number": 2,
-          "syscall_name": "open",
-          "callgraph_path": [
-            "__libc_start_main",
-            "__init_libc",
-            "syscall(2)"
-          ],
-          "resolution": "static",
-          "classification": "INDIRECT_RESOLVED"
-        },
-        {
-          "binary": "java",
-          "function": "__libc_start_main",
-          "syscall_number": 231,
-          "syscall_name": "exit_group",
-          "callgraph_path": [
-            "__libc_start_main",
-            "libc_start_main_stage2",
-            "exit",
-            "_Exit",
-            "syscall(231)"
-          ],
-          "resolution": "static",
-          "classification": "INDIRECT_RESOLVED"
-        },
-        {
-          "binary": "java",
-          "function": "__libc_start_main",
-          "syscall_number": 60,
-          "syscall_name": "exit",
-          "callgraph_path": [
-            "__libc_start_main",
-            "libc_start_main_stage2",
-            "exit",
-            "_Exit",
-            "syscall(60)"
-          ],
-          "resolution": "static",
-          "classification": "INDIRECT_RESOLVED"
-        },
-        {
-          "binary": "java",
-          "function": "__libc_start_main",
-          "syscall_number": 202,
-          "syscall_name": "futex",
-          "callgraph_path": [
-            "__libc_start_main",
-            "libc_start_main_stage2",
-            "exit",
-            "__funcs_on_exit",
-            "__lock",
-            "__futexwait",
-            "syscall(202)"
-          ],
-          "resolution": "static",
-          "classification": "INDIRECT_RESOLVED"
-        },
-        {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
           "syscall_number": 3,
           "syscall_name": "close",
@@ -227,6 +180,7 @@
             "libc_start_main_stage2",
             "exit",
             "__funcs_on_exit",
+            "cookieclose",
             "__stdio_close",
             "syscall(3)"
           ],
@@ -234,94 +188,29 @@
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
-          "syscall_number": 200,
-          "syscall_name": "tkill",
+          "syscall_number": 202,
+          "syscall_name": "futex",
           "callgraph_path": [
             "__libc_start_main",
             "libc_start_main_stage2",
             "exit",
             "__funcs_on_exit",
+            "cookieclose",
             "__stdio_close",
             "__aio_close",
             "aio_cancel",
-            "pthread_cancel",
-            "pthread_kill",
-            "syscall(200)"
+            "pthread_mutex_unlock",
+            "__pthread_mutex_unlock",
+            "__wake",
+            "syscall(202)"
           ],
           "resolution": "static",
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
-          "function": "__libc_start_main",
-          "syscall_number": 273,
-          "syscall_name": "set_robust_list",
-          "callgraph_path": [
-            "__libc_start_main",
-            "libc_start_main_stage2",
-            "exit",
-            "__funcs_on_exit",
-            "__stdio_close",
-            "__aio_close",
-            "aio_cancel",
-            "pthread_cancel",
-            "__pthread_exit",
-            "syscall(273)"
-          ],
-          "resolution": "static",
-          "classification": "INDIRECT_RESOLVED"
-        },
-        {
-          "binary": "java",
-          "function": "__libc_start_main",
-          "syscall_number": 14,
-          "syscall_name": "rt_sigprocmask",
-          "callgraph_path": [
-            "__libc_start_main",
-            "libc_start_main_stage2",
-            "exit",
-            "__funcs_on_exit",
-            "__stdio_close",
-            "__aio_close",
-            "aio_cancel",
-            "pthread_cancel",
-            "__pthread_exit",
-            "__restore_sigs",
-            "syscall(14)"
-          ],
-          "resolution": "static",
-          "classification": "INDIRECT_RESOLVED"
-        },
-        {
-          "binary": "java",
-          "function": "__libc_start_main",
-          "syscall_number": 228,
-          "syscall_name": "clock_gettime",
-          "callgraph_path": [
-            "__libc_start_main",
-            "libc_start_main_stage2",
-            "exit",
-            "__funcs_on_exit",
-            "__stdio_close",
-            "__aio_close",
-            "aio_cancel",
-            "pthread_cancel",
-            "__pthread_exit",
-            "__pthread_tsd_run_dtors",
-            "__pthread_rwlock_rdlock",
-            "__pthread_rwlock_timedrdlock",
-            "__timedwait",
-            "__timedwait_cp",
-            "__clock_gettime",
-            "syscall(228)"
-          ],
-          "resolution": "static",
-          "classification": "INDIRECT_RESOLVED"
-        },
-        {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
           "syscall_number": 96,
           "syscall_name": "gettimeofday",
@@ -330,12 +219,11 @@
             "libc_start_main_stage2",
             "exit",
             "__funcs_on_exit",
+            "cookieclose",
             "__stdio_close",
             "__aio_close",
             "aio_cancel",
-            "pthread_cancel",
-            "__pthread_exit",
-            "__pthread_tsd_run_dtors",
+            "__aio_get_queue",
             "__pthread_rwlock_rdlock",
             "__pthread_rwlock_timedrdlock",
             "__timedwait",
@@ -347,28 +235,123 @@
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
-          "syscall_number": 13,
-          "syscall_name": "rt_sigaction",
+          "syscall_number": 228,
+          "syscall_name": "clock_gettime",
           "callgraph_path": [
             "__libc_start_main",
             "libc_start_main_stage2",
             "exit",
             "__funcs_on_exit",
+            "cookieclose",
             "__stdio_close",
             "__aio_close",
             "aio_cancel",
-            "pthread_cancel",
-            "init_cancellation",
-            "__libc_sigaction",
-            "syscall(13)"
+            "__aio_get_queue",
+            "__pthread_rwlock_rdlock",
+            "__pthread_rwlock_timedrdlock",
+            "__timedwait",
+            "__timedwait_cp",
+            "__clock_gettime",
+            "syscall(228)"
           ],
           "resolution": "static",
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
+          "function": "__libc_start_main",
+          "syscall_number": 14,
+          "syscall_name": "rt_sigprocmask",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "cookieclose",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "__aio_get_queue",
+            "__pthread_rwlock_rdlock",
+            "__pthread_rwlock_timedrdlock",
+            "__timedwait",
+            "__timedwait_cp",
+            "__futex4_cp",
+            "__syscall_cp",
+            "__syscall_cp_c",
+            "__cancel",
+            "pthread_exit",
+            "__pthread_exit",
+            "__restore_sigs",
+            "syscall(14)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "Binaries/java",
+          "function": "__libc_start_main",
+          "syscall_number": 60,
+          "syscall_name": "exit",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "cookieclose",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "__aio_get_queue",
+            "__pthread_rwlock_rdlock",
+            "__pthread_rwlock_timedrdlock",
+            "__timedwait",
+            "__timedwait_cp",
+            "__futex4_cp",
+            "__syscall_cp",
+            "__syscall_cp_c",
+            "__cancel",
+            "pthread_exit",
+            "__pthread_exit",
+            "syscall(60)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "Binaries/java",
+          "function": "__libc_start_main",
+          "syscall_number": 273,
+          "syscall_name": "set_robust_list",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__funcs_on_exit",
+            "cookieclose",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "__aio_get_queue",
+            "__pthread_rwlock_rdlock",
+            "__pthread_rwlock_timedrdlock",
+            "__timedwait",
+            "__timedwait_cp",
+            "__futex4_cp",
+            "__syscall_cp",
+            "__syscall_cp_c",
+            "__cancel",
+            "pthread_exit",
+            "__pthread_exit",
+            "syscall(273)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
           "syscall_number": 12,
           "syscall_name": "brk",
@@ -377,6 +360,7 @@
             "libc_start_main_stage2",
             "exit",
             "__funcs_on_exit",
+            "cookieclose",
             "__stdio_close",
             "__aio_close",
             "aio_cancel",
@@ -391,7 +375,7 @@
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
           "syscall_number": 28,
           "syscall_name": "madvise",
@@ -400,6 +384,7 @@
             "libc_start_main_stage2",
             "exit",
             "__funcs_on_exit",
+            "cookieclose",
             "__stdio_close",
             "__aio_close",
             "aio_cancel",
@@ -415,7 +400,7 @@
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
           "syscall_number": 72,
           "syscall_name": "fcntl",
@@ -424,6 +409,7 @@
             "libc_start_main_stage2",
             "exit",
             "__funcs_on_exit",
+            "cookieclose",
             "__stdio_close",
             "__aio_close",
             "aio_cancel",
@@ -435,58 +421,50 @@
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
-          "syscall_number": 8,
-          "syscall_name": "lseek",
+          "syscall_number": 200,
+          "syscall_name": "tkill",
           "callgraph_path": [
             "__libc_start_main",
             "libc_start_main_stage2",
             "exit",
-            "__stdio_exit",
-            "close_file",
-            "__stdio_seek",
-            "syscall(8)"
+            "__funcs_on_exit",
+            "cookieclose",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "pthread_cancel",
+            "pthread_kill",
+            "syscall(200)"
           ],
           "resolution": "static",
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
-          "syscall_number": 0,
-          "syscall_name": "read",
+          "syscall_number": 13,
+          "syscall_name": "rt_sigaction",
           "callgraph_path": [
             "__libc_start_main",
             "libc_start_main_stage2",
             "exit",
-            "__stdio_exit",
-            "close_file",
-            "__stdio_read",
-            "syscall(0)"
+            "__funcs_on_exit",
+            "cookieclose",
+            "__stdio_close",
+            "__aio_close",
+            "aio_cancel",
+            "pthread_cancel",
+            "init_cancellation",
+            "__libc_sigaction",
+            "syscall(13)"
           ],
           "resolution": "static",
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
-          "function": "__libc_start_main",
-          "syscall_number": 19,
-          "syscall_name": "readv",
-          "callgraph_path": [
-            "__libc_start_main",
-            "libc_start_main_stage2",
-            "exit",
-            "__stdio_exit",
-            "close_file",
-            "__stdio_read",
-            "syscall(19)"
-          ],
-          "resolution": "static",
-          "classification": "INDIRECT_RESOLVED"
-        },
-        {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
           "syscall_number": 11,
           "syscall_name": "munmap",
@@ -496,6 +474,7 @@
             "exit",
             "__stdio_exit",
             "close_file",
+            "cookiewrite",
             "wms_write",
             "realloc",
             "free",
@@ -507,7 +486,7 @@
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
           "syscall_number": 25,
           "syscall_name": "mremap",
@@ -517,6 +496,7 @@
             "exit",
             "__stdio_exit",
             "close_file",
+            "cookiewrite",
             "wms_write",
             "realloc",
             "__mremap",
@@ -526,7 +506,25 @@
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
+          "function": "__libc_start_main",
+          "syscall_number": 8,
+          "syscall_name": "lseek",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__stdio_exit",
+            "close_file",
+            "cookiewrite",
+            "__stdio_seek",
+            "syscall(8)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
           "syscall_number": 20,
           "syscall_name": "writev",
@@ -537,8 +535,8 @@
             "__stdio_exit",
             "close_file",
             "cookiewrite",
-            "cookieread",
             "cookieseek",
+            "cookieread",
             "__stdio_write",
             "syscall(20)"
           ],
@@ -546,7 +544,47 @@
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
+          "function": "__libc_start_main",
+          "syscall_number": 19,
+          "syscall_name": "readv",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__stdio_exit",
+            "close_file",
+            "cookiewrite",
+            "cookieseek",
+            "cookieread",
+            "__stdio_read",
+            "syscall(19)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "Binaries/java",
+          "function": "__libc_start_main",
+          "syscall_number": 0,
+          "syscall_name": "read",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "__stdio_exit",
+            "close_file",
+            "cookiewrite",
+            "cookieseek",
+            "cookieread",
+            "__stdio_read",
+            "syscall(0)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "Binaries/java",
           "function": "__libc_start_main",
           "syscall_number": 16,
           "syscall_name": "ioctl",
@@ -563,7 +601,22 @@
           "classification": "INDIRECT_RESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
+          "function": "__libc_start_main",
+          "syscall_number": 231,
+          "syscall_name": "exit_group",
+          "callgraph_path": [
+            "__libc_start_main",
+            "libc_start_main_stage2",
+            "exit",
+            "_Exit",
+            "syscall(231)"
+          ],
+          "resolution": "static",
+          "classification": "INDIRECT_RESOLVED"
+        },
+        {
+          "binary": "Binaries/java",
           "function": "__register_frame_info",
           "syscall_number": null,
           "syscall_name": null,
@@ -574,7 +627,7 @@
           "classification": "INDIRECT_UNRESOLVED"
         },
         {
-          "binary": "java",
+          "binary": "Binaries/java",
           "function": "__cxa_finalize",
           "syscall_number": null,
           "syscall_name": null,
