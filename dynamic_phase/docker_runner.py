@@ -21,11 +21,12 @@ class DockerRunner:
     def __init__(self, docker_command: Sequence[str] = ("docker",)) -> None:
         self.docker_command = tuple(docker_command)
 
-    def create(self, image: str, seccomp_profile: str | None, command: Sequence[str]) -> str:
+    def create(self, image: str, seccomp_profile: str | None, command: Sequence[str], docker_opts: Sequence[str] = ()) -> str:
         args = [
             *self.docker_command,
             "create",
             *(["--security-opt", f"seccomp={seccomp_profile}"] if seccomp_profile else []),
+            *docker_opts,
             image,
             *command,
         ]

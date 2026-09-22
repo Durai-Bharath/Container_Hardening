@@ -1,0 +1,14 @@
+python3 -m dynamic_phase.main \
+  --image mysql:8 \
+  --command "mysqld" \
+  --static-report static-seccomp/mysql_seccomp.json \
+  --baseline-syscalls standard_runc_baseline.json \
+  --docker-opts "-e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=sbtest" \
+  --timeout 240
+
+
+docker rm -f $(docker ps -aq --filter ancestor=mysql:8)
+docker rm -f $(docker ps -aq --filter ancestor=aquasec/tracee:latest)
+
+docker rm -f $(docker ps -aq --filter ancestor=mysql:8)
+docker rm -f $(docker ps -aq --filter ancestor=aquasec/tracee:latest)

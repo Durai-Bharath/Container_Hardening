@@ -1,0 +1,1 @@
+python3 static_analyzer.py --input Binaries/nginx --seccomp-out static-seccomp/nginx-seccomp.json

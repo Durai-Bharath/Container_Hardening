@@ -1,0 +1,52 @@
+bharath@3124:~/Desktop/Container-Security$ docker ps
+CONTAINER ID   IMAGE                   COMMAND                  CREATED         STATUS         PORTS     NAMES
+b4c87dd7b2eb   aquasec/tracee:latest   "/tracee/entrypoint.…"   5 seconds ago   Up 4 seconds             tracee-9ff7717e0608
+cb81e7b20abc   nginx:latest            "/docker-entrypoint.…"   5 seconds ago   Up 5 seconds   80/tcp    loving_volhard
+66739654ce27   aquasec/tracee:latest   "/tracee/entrypoint.…"   3 hours ago     Up 3 hours               zen_kare
+c2c007e2a53b   aquasec/tracee:latest   "/tracee/entrypoint.…"   3 hours ago     Up 3 hours               magical_hoover
+b7061edb002b   aquasec/tracee:latest   "/tracee/entrypoint.…"   11 hours ago    Up 11 hours              tracee-531f2a4ce870
+531f2a4ce870   nginx:latest            "/docker-entrypoint.…"   11 hours ago    Up 11 hours    80/tcp    quizzical_leavitt
+
+bharath@3124:~/Desktop/Container-Security$ docker inspect -f '{{range.NetworkSettings.Networks}}{{.IPAddress}}{{end}}' loving_volhard
+172.17.0.4
+
+
+wrk -t2 -c10 -d60s http://172.17.0.4/     //nginx
+
+redis-benchmark -h 172.17.0.3 -p 6379 -c 10 -d 100 -t set,get -n 200000  //redis
+
+
+
+//To generate static_report
+python3 static_analyzer.py   --input Binaries/redis-server   --json-out redis_static_report.json   --text-out /tmp/redis_static_report.txt  --baseline-syscalls standard_runc_baseline.json --seccomp-out /tmp/redis_seccomp.json
+
+
+
+python3 -m dynamic_phase.main \
+  --image nginx:latest \
+  --command "nginx -g 'daemon off;'" \
+  --static-report static_syscall_report.json \
+  --output dynamic_phase_report.json \
+  --timeout 60
+
+python3 -m dynamic_phase.main   --image nginx:latest   --command "nginx -g 'daemon off;'"   --static-report static-seccomp/nginx_seccomp.json   --baseline-syscalls standard_runc_baseline.json   --timeout 120
+
+
+python3 -m dynamic_phase.main   --image redis:7   --command "redis-server --save '' --appendonly no --protected-mode no"   --static-report static-seccomp/redis_seccomp.json   --baseline-syscalls standard_runc_baseline.json   --timeout 120
+
+python3 -m dynamic_phase.main \
+  --image mysql:8 \
+  --command "mysqld" \
+  --static-report static-seccomp/mysql_seccomp.json \
+  --baseline-syscalls standard_runc_baseline.json \
+  --docker-opts "-e MYSQL_ROOT_PASSWORD=root" \
+  --timeout 120
+
+
+
+docker ps -a --filter ancestor=redis:7
+docker ps -a --filter ancestor=aquasec/tracee:latest
+
+docker rm -f $(docker ps -aq --filter ancestor=redis:7)
+docker rm -f $(docker ps -aq --filter ancestor=aquasec/tracee:latest)
+

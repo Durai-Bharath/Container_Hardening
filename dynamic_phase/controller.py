@@ -53,12 +53,13 @@ class DynamicAnalysisController:
         static_syscalls: Iterable[str],
         command: Sequence[str],
         architecture: str = "x86_64",
+        docker_opts: Sequence[str] = (),
     ) -> DynamicAnalysisResult:
         static = set(static_syscalls)
         iterations: list[DynamicIteration] = []
         with tempfile.TemporaryDirectory(prefix="dynamic-seccomp-") as directory:
             discovery_result, discovery_events = self._run_once(
-                image, command, None
+                image, command, None, docker_opts=docker_opts
             )
             observed = self.profiler.profile(discovery_events).observed_syscalls
             missing = observed - static
@@ -74,7 +75,7 @@ class DynamicAnalysisController:
                 generate_oci_seccomp_profile(initialize, architecture), encoding="utf-8"
             )
             validation_result, validation_events = self._run_once(
-                image, command, str(profile)
+                image, command, str(profile), docker_opts=docker_opts
             )
             validation_observed = self.profiler.profile(validation_events).observed_syscalls
             validation_missing = validation_observed - initialize
@@ -127,8 +128,9 @@ class DynamicAnalysisController:
         image: str,
         command: Sequence[str],
         seccomp_profile: str | None,
+        docker_opts: Sequence[str] = (),
     ) -> tuple[ContainerResult, list[SyscallEvent]]:
-        container_id = self.runner.create(image, seccomp_profile, command)
+        container_id = self.runner.create(image, seccomp_profile, command, docker_opts=docker_opts)
         collector = self.collector_factory()
         try:
             collector.start(container_id)

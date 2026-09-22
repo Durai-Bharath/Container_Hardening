@@ -1,0 +1,20 @@
+docker run -d --name nginx-seccomp \
+  --security-opt seccomp=$(pwd)/static-seccomp/nginx_seccomp.json \
+  -p 8080:80 \
+  nginx:latest nginx -g 'daemon off;'
+
+
+docker ps -a --filter name=nginx-seccomp     # Exited immediately = a needed syscall is blocked
+docker logs nginx-seccomp
+curl -I http://127.0.0.1:8080/
+
+# Confirm seccomp is active (2 = filter mode)
+docker exec nginx-seccomp grep Seccomp /proc/1/status
+
+
+
+gcc -static -o sc sc.c
+docker cp sc nginx-seccomp:/tmp/sc
+
+docker exec nginx-seccomp /tmp/sc 272   # unshare (banned) -> expect ret=-1 errno=1 (Operation not permitted)
+docker exec nginx-seccomp /tmp/sc 39

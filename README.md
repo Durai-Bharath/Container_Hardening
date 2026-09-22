@@ -98,10 +98,17 @@ python3 -m dynamic_phase.main \
   --running-trace syscall_events.jsonl \
   --output running_phase_report.json \
   --window-seconds 0.001 \
-  --warmup 5 \
   --frequency-weight 0.5 \
-  --bigram-weight 0.5
+  --bigram-weight 0.5 \
+  --similarity-threshold 0.8 \
+  --stabilization-seconds 5
 ```
+
+Running-phase segmentation follows the paper's similarity-based method. It
+compares adjacent feature windows and selects the end of the first sustained
+stabilization interval whose weighted cosine similarity remains at or above
+`0.8`. The stabilization interval defaults to five seconds; there is no
+warm-up parameter.
 
 Run the real Docker/Tracee dynamic analysis directly against an image:
 

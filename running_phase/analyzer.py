@@ -3,7 +3,6 @@ from __future__ import annotations
 import math
 from collections import Counter
 from dataclasses import dataclass
-from statistics import fmean, pstdev
 from typing import Iterable, List, Optional, Sequence, Tuple
 
 from common.events import SyscallEvent
@@ -38,30 +37,23 @@ def _cosine_distance(left: Sequence[float], right: Sequence[float]) -> float:
     return 1.0 - max(-1.0, min(1.0, similarity))
 
 
-class AdaptivePageHinkley:
-    """Page-Hinkley detector with a threshold calibrated from warm-up scores."""
+class SimilarityThresholdDetector:
+    """Detect the end of a sustained high-similarity window."""
 
-    def __init__(self, warmup: int = 5, threshold_factor: float = 5.0, delta: float = 0.01) -> None:
-        if warmup < 2 or threshold_factor <= 0 or delta < 0:
-            raise ValueError("warmup must be >= 2, threshold_factor > 0, and delta >= 0")
-        self.warmup = warmup
-        self.threshold_factor = threshold_factor
-        self.delta = delta
+    def __init__(self, threshold: float = 0.8, stabilization_seconds: float = 5.0) -> None:
+        if not 0.0 < threshold <= 1.0 or stabilization_seconds <= 0:
+            raise ValueError("threshold must be in (0, 1] and stabilization_seconds must be positive")
+        self.threshold = threshold
+        self.stabilization_seconds = stabilization_seconds
 
-    def detect(self, values: Sequence[float]) -> Optional[int]:
-        if len(values) <= self.warmup:
+    def detect(self, similarities: Sequence[float], window_seconds: float) -> Optional[int]:
+        required = max(1, math.ceil(self.stabilization_seconds / window_seconds))
+        if len(similarities) < required:
             return None
-        baseline = list(values[: self.warmup])
-        threshold = max(pstdev(baseline) * self.threshold_factor, self.delta)
-        mean = fmean(baseline)
-        cumulative = 0.0
-        minimum = 0.0
-        for index, value in enumerate(values[self.warmup :], self.warmup):
-            mean = mean + (value - mean) / (index + 1)
-            cumulative += value - mean - self.delta
-            minimum = min(minimum, cumulative)
-            if cumulative - minimum > threshold:
-                return index
+        for end in range(required - 1, len(similarities)):
+            start = end - required + 1
+            if all(value >= self.threshold for value in similarities[start : end + 1]):
+                return end + 1
         return None
 
 
@@ -71,7 +63,8 @@ class RunningPhaseAnalyzer:
         window_seconds: float = 0.001,
         frequency_weight: float = 0.5,
         bigram_weight: float = 0.5,
-        detector: Optional[AdaptivePageHinkley] = None,
+        similarity_threshold: float = 0.8,
+        stabilization_seconds: float = 5.0,
     ) -> None:
         if window_seconds <= 0 or frequency_weight < 0 or bigram_weight < 0:
             raise ValueError("window_seconds must be positive and weights cannot be negative")
@@ -81,7 +74,7 @@ class RunningPhaseAnalyzer:
         total = frequency_weight + bigram_weight
         self.frequency_weight = frequency_weight / total
         self.bigram_weight = bigram_weight / total
-        self.detector = detector or AdaptivePageHinkley()
+        self.detector = SimilarityThresholdDetector(similarity_threshold, stabilization_seconds)
 
     def analyze(self, events: Iterable[SyscallEvent]) -> RunningPhaseResult:
         ordered = sorted(events, key=lambda event: event.timestamp)
@@ -91,8 +84,8 @@ class RunningPhaseAnalyzer:
             + self.bigram_weight * _cosine_distance(current.bigrams, previous.bigrams)
             for previous, current in zip(windows, windows[1:])
         )
-        detector_index = self.detector.detect(dissimilarities)
-        segmentation_index = detector_index + 1 if detector_index is not None else None
+        similarities = tuple(1.0 - value for value in dissimilarities)
+        segmentation_index = self.detector.detect(similarities, self.window_seconds)
         running = self._running_syscalls(ordered, windows, segmentation_index)
         return RunningPhaseResult(
             segmentation_index=segmentation_index,

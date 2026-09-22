@@ -1,0 +1,100 @@
+docker rm -f tracee-mysql mysql-discovery 2>/dev/null || true
+
+docker run -d \
+  --name tracee-mysql \
+  --privileged \
+  --pid=host \
+  --cgroupns=host \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /etc/os-release:/etc/os-release-host:ro \
+  -v /lib/modules:/lib/modules:ro \
+  -v /usr/src:/usr/src:ro \
+  -e LIBBPFGO_OSRELEASE_FILE=/etc/os-release-host \
+  aquasec/tracee:latest \
+  --scope container=new \
+  --events syscalls \
+  --output json
+
+
+docker run -d --name mysql-discovery \
+  -e MYSQL_ROOT_PASSWORD=testpass \
+  -e MYSQL_DATABASE=testdb \
+  -p 3306:3306 \
+  mysql:8
+
+
+MYSQL_ID=$(docker inspect -f '{{.Id}}' mysql-discovery)
+
+
+sysbench oltp_read_write \
+  --mysql-host=127.0.0.1 \
+  --mysql-port=3306 \
+  --mysql-user=root \
+  --mysql-password=testpass \
+  --mysql-db=testdb \
+  --tables=4 \
+  --table-size=10000 \
+  prepare
+
+
+sysbench oltp_read_write \
+  --mysql-host=127.0.0.1 \
+  --mysql-port=3306 \
+  --mysql-user=root \
+  --mysql-password=testpass \
+  --mysql-db=testdb \
+  --tables=4 \
+  --table-size=10000 \
+  --threads=10 \
+  --time=30 \
+  run
+
+sysbench oltp_read_write \
+  --mysql-host=127.0.0.1 \
+  --mysql-port=3306 \
+  --mysql-user=root \
+  --mysql-password=testpass \
+  --mysql-db=testdb \
+  --tables=4 \
+  cleanup
+
+  docker exec mysql-discovery mysql -uroot -ptestpass testdb -e "
+  CREATE TABLE t (id INT PRIMARY KEY AUTO_INCREMENT, v VARCHAR(100));
+  INSERT INTO t (v) SELECT UUID() FROM information_schema.columns LIMIT 2000;
+  CREATE INDEX idx_v ON t(v);
+  START TRANSACTION; UPDATE t SET v='x' WHERE id<100; COMMIT;
+  ALTER TABLE t ADD COLUMN c INT DEFAULT 0;
+  FLUSH LOGS;
+" 2>/dev/null
+docker exec mysql-discovery mysqldump -uroot -ptestpass testdb >/dev/null 2>&1
+
+
+
+  docker rm -f mysql-discovery
+
+docker logs tracee-mysql > /tmp/mysql_trace_raw.log 2>&1
+docker rm -f tracee-mysql
+
+
+jq -c --arg id "$MYSQL_ID" '
+  select(
+    type == "object" and
+    .syscall and
+    (
+      .containerId == $id or
+      .container.id == $id
+    )
+  )
+  | {
+      timestamp: ((.timestamp // .ts) / 1000000000),
+      syscall: .syscall,
+      pid: (.processId // .pid),
+      process: (.processName // .comm)
+    }
+' /tmp/mysql_trace_raw.log > traces/mysql_discovery_trace.jsonl
+
+wc -l traces/mysql_discovery_trace.jsonl
+head -n 3 traces/mysql_discovery_trace.jsonl
+
+
+

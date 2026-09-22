@@ -38,6 +38,7 @@ def run_dynamic(
     timeout: float,
     baseline_syscalls: str | None = None,
     docker_command: str = "docker",
+    docker_opts: str = "",
 ) -> int:
     static_names = _static_names(static_report)
     
@@ -56,7 +57,7 @@ def run_dynamic(
             startup_settle=2.0,
         ),
         timeout=timeout,
-    ).analyze(image, static_names, shlex.split(command))
+    ).analyze(image, static_names, shlex.split(command), docker_opts=shlex.split(docker_opts))
     
     image_name = image.split('/')[-1].split(':')[0]
     filename = f"{image_name}_seccomp.json"
@@ -93,6 +94,7 @@ def main() -> int:
         default=None,
         help="Path to JSON array of baseline syscalls to inject",
     )
+    parser.add_argument("--docker-opts", default="", help="Additional options for docker create (e.g., -e MYSQL_ROOT_PASSWORD=root)")
     parser.add_argument("--docker-command", default="docker")
     args = parser.parse_args()
     
@@ -103,6 +105,7 @@ def main() -> int:
         args.timeout,
         args.baseline_syscalls,
         args.docker_command,
+        args.docker_opts,
     )
 
 
