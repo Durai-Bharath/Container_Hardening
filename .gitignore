@@ -1,0 +1,3 @@
+# Large generated traces and reports
+traces/*.jsonl
+*_running_phase_report.json
