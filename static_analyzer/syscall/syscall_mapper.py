@@ -6,7 +6,7 @@ import re
 from typing import Dict, Optional
 
 
-SYSCALL_DEFINE_RE = re.compile(r"^\s*#\s*define\s+__NR_([A-Za-z0-9_]+)\s+([0-9]+)\s*$")
+SYSCALL_DEFINE_RE = re.compile(r"^\s*#\s*define\s+__NR_([A-Za-z0-9_]+)\s+([0-9]+)\s*$")  # MACRO SYSCALLS (#define __NR_READ 0)
 
 
 class SyscallMapper:

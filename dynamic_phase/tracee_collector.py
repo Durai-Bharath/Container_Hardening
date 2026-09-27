@@ -76,6 +76,7 @@ class TraceeCollector:
             stderr_handle = tempfile.NamedTemporaryFile(mode="w", delete=False)
             self._stdout_path = stdout_handle.name
             self._stderr_path = stderr_handle.name
+            # Non-blocking execution
             self.process = subprocess.Popen(
                 command,
                 stdout=stdout_handle,
@@ -111,8 +112,10 @@ class TraceeCollector:
             try:
                 payload = json.loads(line)
             except json.JSONDecodeError:
+                print(f"JSON DECODE ERROR OCCURED for {line} \n")
                 continue
             if not isinstance(payload, dict):
+                print(f"NOT A DICT INSTANCE ERROR for {line} \n")
                 continue
             if not self._matches_container(payload):
                 continue
@@ -187,7 +190,7 @@ class TraceeCollector:
         self._stdout_path = None
         self._stderr_path = None
 
-
+# Safest Code
 def _container_id_from_payload(payload: Mapping[str, Any]) -> str:
     container = payload.get("container")
     if isinstance(container, Mapping):

@@ -135,7 +135,7 @@ class DynamicAnalysisController:
         try:
             collector.start(container_id)
             self.runner.start(container_id)
-            result = self.runner.wait(container_id, self.timeout, remove=False)
+            result = self.runner.wait(container_id, self.timeout, remove=False) # Doubt
             events = collector.stop()
             self.runner.remove(container_id)
             return result, events

@@ -29,7 +29,12 @@ python3 -m dynamic_phase.main \
   --output dynamic_phase_report.json \
   --timeout 60
 
-python3 -m dynamic_phase.main   --image nginx:latest   --command "nginx -g 'daemon off;'"   --static-report static-seccomp/nginx_seccomp.json   --baseline-syscalls standard_runc_baseline.json   --timeout 120
+python3 -m dynamic_phase.main \
+  --image nginx:latest  \
+  --command "nginx -g 'daemon off;'"  \
+  --static-report static-seccomp/nginx_seccomp.json  \
+  --baseline-syscalls standard_runc_baseline.json  \
+  --timeout 120
 
 
 python3 -m dynamic_phase.main   --image redis:7   --command "redis-server --save '' --appendonly no --protected-mode no"   --static-report static-seccomp/redis_seccomp.json   --baseline-syscalls standard_runc_baseline.json   --timeout 120

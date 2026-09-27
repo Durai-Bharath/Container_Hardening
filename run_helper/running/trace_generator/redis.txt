@@ -23,6 +23,8 @@ docker run -d \
   redis-server --save "" --appendonly no --protected-mode no
 
 
+// timeout 5m ...
+
   timeout 30 redis-benchmark \
   -h 127.0.0.1 \
   -p 6379 \

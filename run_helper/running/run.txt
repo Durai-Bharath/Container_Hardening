@@ -1,7 +1,15 @@
-python3 -m running_phase.main
-    --running-trace traces/nginx_discovery_trace.jsonl 
-    --output /tmp/nginx_running_phase_pilot.json 
-    --window-seconds 0.1 
-    --warmup 5 
-    --frequency-weight 0.5 
-    --bigram-weight 0.5
+python3 -m running_phase.main \
+  --running-trace traces/nginx_discovery_trace.jsonl \
+  --output /tmp/nginx_running_phase_pilot.json \
+  --window-seconds 0.1 \
+  --similarity-threshold 0.8 \
+  --stabilization-seconds 5
+
+
+
+python3 -m running_phase.main \
+  --running-trace traces/mysql_discovery_trace.jsonl \
+  --output mysql_running_phase_report.json \
+  --window-seconds 0.1 \
+  --similarity-threshold 0.8 \
+  --stabilization-seconds 5

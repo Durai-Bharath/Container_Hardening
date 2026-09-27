@@ -13,7 +13,6 @@ class FeatureWindow:
     start: float
     end: float
     frequency: Tuple[float, ...]
-    bigrams: Tuple[float, ...]
     syscalls: Tuple[str, ...]
 
 
@@ -61,27 +60,19 @@ class RunningPhaseAnalyzer:
     def __init__(
         self,
         window_seconds: float = 0.001,
-        frequency_weight: float = 0.5,
-        bigram_weight: float = 0.5,
         similarity_threshold: float = 0.8,
         stabilization_seconds: float = 5.0,
     ) -> None:
-        if window_seconds <= 0 or frequency_weight < 0 or bigram_weight < 0:
-            raise ValueError("window_seconds must be positive and weights cannot be negative")
-        if frequency_weight + bigram_weight == 0:
-            raise ValueError("at least one feature weight must be positive")
+        if window_seconds <= 0:
+            raise ValueError("window_seconds must be positive")
         self.window_seconds = window_seconds
-        total = frequency_weight + bigram_weight
-        self.frequency_weight = frequency_weight / total
-        self.bigram_weight = bigram_weight / total
         self.detector = SimilarityThresholdDetector(similarity_threshold, stabilization_seconds)
 
     def analyze(self, events: Iterable[SyscallEvent]) -> RunningPhaseResult:
         ordered = sorted(events, key=lambda event: event.timestamp)
         windows = self.extract_features(ordered)
         dissimilarities = tuple(
-            self.frequency_weight * _cosine_distance(current.frequency, previous.frequency)
-            + self.bigram_weight * _cosine_distance(current.bigrams, previous.bigrams)
+            _cosine_distance(current.frequency, previous.frequency)
             for previous, current in zip(windows, windows[1:])
         )
         similarities = tuple(1.0 - value for value in dissimilarities)
@@ -99,7 +90,6 @@ class RunningPhaseAnalyzer:
         if not events:
             return []
         vocabulary = sorted({event.syscall for event in events})
-        bigram_vocabulary = [(left, right) for left in vocabulary for right in vocabulary]
         start = events[0].timestamp
         grouped: List[List[SyscallEvent]] = []
         current: List[SyscallEvent] = []
@@ -115,15 +105,12 @@ class RunningPhaseAnalyzer:
         windows: List[FeatureWindow] = []
         for index, group in enumerate(grouped):
             counts = Counter(event.syscall for event in group)
-            sequence = [event.syscall for event in group]
-            transitions = Counter(zip(sequence, sequence[1:]))
             total = float(len(group))
             windows.append(
                 FeatureWindow(
                     start=start + index * self.window_seconds,
                     end=start + (index + 1) * self.window_seconds,
                     frequency=tuple(counts[name] / total for name in vocabulary),
-                    bigrams=tuple(transitions[pair] / max(total - 1.0, 1.0) for pair in bigram_vocabulary),
                     syscalls=tuple(sorted(counts)),
                 )
             )

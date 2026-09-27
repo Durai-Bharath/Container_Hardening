@@ -98,17 +98,18 @@ python3 -m dynamic_phase.main \
   --running-trace syscall_events.jsonl \
   --output running_phase_report.json \
   --window-seconds 0.001 \
-  --frequency-weight 0.5 \
-  --bigram-weight 0.5 \
   --similarity-threshold 0.8 \
   --stabilization-seconds 5
 ```
 
 Running-phase segmentation follows the paper's similarity-based method. It
-compares adjacent feature windows and selects the end of the first sustained
-stabilization interval whose weighted cosine similarity remains at or above
-`0.8`. The stabilization interval defaults to five seconds; there is no
-warm-up parameter.
+ uses only syscall frequency vectors, compares adjacent windows, and selects
+ the end of the first sustained stabilization interval whose cosine similarity
+ remains at or above `0.8`. The stabilization interval defaults to five
+ seconds; there is no adaptive change-point or warm-up parameter. The command
+ writes the JSON report and an OCI seccomp profile to
+ `running-seccomp/<report-name>_seccomp.json` (or to `--seccomp-output` when
+ provided).
 
 Run the real Docker/Tracee dynamic analysis directly against an image:
 
@@ -155,10 +156,11 @@ RUN_TRACE_INTEGRATION=1 pytest -q tests/test_tracee_integration.py
 
 The dynamic report contains only the observed runtime syscall set (D-SF) and
 the static/runtime initialization union (I-SF). The running-phase report
-contains time windows, frequency and bigram features, dissimilarity scores, the
-adaptive Page-Hinkley segmentation point, and the steady-state syscall set
-(R-SF). This separation also allows the running-phase algorithm to be tested
-against captured traces without rerunning Docker or Tracee.
+ The running-phase report contains time windows, frequency features,
+ dissimilarity scores, the sustained cosine-similarity segmentation point, and
+ the steady-state syscall set (R-SF). This separation also allows the
+ running-phase algorithm to be tested against captured traces without rerunning
+ Docker or Tracee.
 
 ## Notes on correctness
 
