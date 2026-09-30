@@ -55,3 +55,15 @@ docker ps -a --filter ancestor=aquasec/tracee:latest
 docker rm -f $(docker ps -aq --filter ancestor=redis:7)
 docker rm -f $(docker ps -aq --filter ancestor=aquasec/tracee:latest)
 
+
+
+
+// Crash loop
+
+python3 dynamic_phase_crash_loop/crash_loop.py \
+  --image nginx:latest \
+  --static-seccomp static-seccomp/nginx_seccomp.json \
+  --config dynamic_phase_crash_loop/workload-runner/workloads.yaml \
+  --output nginx_dynamic_report.json \
+  --clean-passes 2 \
+  --max-iterations 10

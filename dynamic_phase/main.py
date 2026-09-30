@@ -59,6 +59,14 @@ def run_dynamic(
         timeout=timeout,
     ).analyze(image, static_names, shlex.split(command), docker_opts=shlex.split(docker_opts))
     
+    if result.unresolved_failure:
+        print(f"Validation failed: {result.unresolved_failure}")
+        return 1
+
+    if not result.dynamic_syscalls:
+        print("No dynamic syscalls captured, zero events observed.")
+        return 1
+
     image_name = image.split('/')[-1].split(':')[0]
     filename = f"{image_name}_seccomp.json"
     

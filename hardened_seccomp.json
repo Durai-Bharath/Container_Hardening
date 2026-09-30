@@ -1,0 +1,60 @@
+{
+  "defaultAction": "SCMP_ACT_LOG",
+  "architectures": ["SCMP_ARCH_X86_64"],
+  "syscalls": [
+    {
+      "comment": "High-risk syscalls stay hard-denied even during discovery. These are almost never legitimately needed by a web server and should not be whitelisted just because complain-mode happened to log them.",
+      "names": [
+        "ptrace",
+        "mount",
+        "umount2",
+        "reboot",
+        "kexec_load",
+        "kexec_file_load",
+        "init_module",
+        "finit_module",
+        "delete_module",
+        "swapon",
+        "swapoff",
+        "syslog",
+        "acct",
+        "settimeofday",
+        "clock_settime",
+        "personality",
+        "add_key",
+        "keyctl",
+        "bpf",
+        "userfaultfd",
+        "process_vm_readv",
+        "process_vm_writev"
+      ],
+      "action": "SCMP_ACT_ERRNO"
+    },
+    {
+      "comment": "Deliberately minimal seed allow-list: just enough for the container's init process and dynamic linker to start. Everything nginx itself needs at runtime (socket, bind, listen, accept4, epoll_*, sendfile, etc.) is intentionally left OFF this list so it falls through to SCMP_ACT_LOG and shows up in the audit log — that log output IS the discovery result.",
+      "names": [
+        "execve",
+        "exit",
+        "exit_group",
+        "brk",
+        "arch_prctl",
+        "access",
+        "mmap",
+        "munmap",
+        "mprotect",
+        "read",
+        "write",
+        "close",
+        "openat",
+        "fstat",
+        "lseek",
+        "rt_sigaction",
+        "rt_sigprocmask",
+        "set_tid_address",
+        "set_robust_list",
+        "prlimit64"
+      ],
+      "action": "SCMP_ACT_ALLOW"
+    }
+  ]
+}

@@ -45,7 +45,7 @@ class DockerRunner:
             detail = (result.stderr or result.stdout or "").strip()
             raise DockerError(f"Docker start failed: {detail}")
 
-    def wait(self, container_id: str, timeout: float, remove: bool = True) -> ContainerResult:
+    def wait(self, container_id: str, timeout: float) -> ContainerResult:
         """Wait for an already-running container to exit."""
         try:
             wait = subprocess.run(
@@ -68,14 +68,6 @@ class DockerRunner:
             return ContainerResult(container_id, -1, "container execution timed out", True)
         except (OSError, subprocess.CalledProcessError, DockerError, ValueError) as exc:
             raise DockerError(f"container execution failed: {exc}") from exc
-        finally:
-            if remove:
-                self.remove(container_id)
-
-    def start_and_wait(self, container_id: str, timeout: float, remove: bool = True) -> ContainerResult:
-        """Convenience: start then wait."""
-        self.start(container_id)
-        return self.wait(container_id, timeout, remove)
 
     def kill(self, container_id: str) -> None:
         subprocess.run([*self.docker_command, "kill", container_id], check=False, capture_output=True)

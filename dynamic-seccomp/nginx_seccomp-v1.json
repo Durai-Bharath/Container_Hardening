@@ -63,6 +63,7 @@
         "rseq",
         "rt_sigaction",
         "rt_sigprocmask",
+        "rt_sigsuspend",
         "sched_getaffinity",
         "sendfile",
         "sendmsg",

@@ -5,6 +5,8 @@ import os
 import subprocess
 import tempfile
 import time
+import urllib.error
+import urllib.request
 import uuid
 from typing import Any, Mapping, Optional, Sequence
 
@@ -25,12 +27,14 @@ class TraceeCollector:
         privileged: bool = True,
         startup_timeout: float = 90.0,
         startup_settle: float = 2.0,
+        health_port: int = 3366,
     ) -> None:
         self.tracee_image = tracee_image
         self.docker_command = tuple(docker_command)
         self.privileged = privileged
         self.startup_timeout = startup_timeout
         self.startup_settle = startup_settle
+        self.health_port = health_port
         self.process: Optional[subprocess.Popen[str]] = None
         self._stdout_path: Optional[str] = None
         self._stderr_path: Optional[str] = None
@@ -45,7 +49,7 @@ class TraceeCollector:
         restricted to ``container_id`` when it is known.
         """
         self._container_id = container_id
-        command = [*self.docker_command, "run", "--name", self._run_name, "--rm"]
+        command = [*self.docker_command, "run", "--name", self._run_name, "--rm", "--network=host"]
         if self.privileged:
             command.append("--privileged")
         command.extend(
@@ -69,6 +73,10 @@ class TraceeCollector:
                 "syscalls",
                 "--output",
                 "json",
+                "--server",
+                f"http-address=127.0.0.1:{self.health_port}",
+                "--server",
+                "healthz",
             ]
         )
         try:
@@ -91,8 +99,13 @@ class TraceeCollector:
         self._wait_until_ready()
 
     def bind(self, container_id: str) -> None:
-        """Remember the target container so stop() can drop other new-container events."""
-        self._container_id = container_id
+        """Bind subsequent event filtering to a target created after Tracee."""
+        value = container_id.strip()
+        if not value:
+            raise TraceeError("cannot bind Tracee to an empty container ID")
+        self._container_id = value
+
+
 
     def stop(self) -> list[SyscallEvent]:
         if self.process is None:
@@ -103,26 +116,27 @@ class TraceeCollector:
         except subprocess.TimeoutExpired:
             self.process.kill()
             self.process.communicate()
-        stdout = self._read_output(self._stdout_path)
-        stderr = self._read_output(self._stderr_path)
+        subprocess.run([*self.docker_command, "rm", "-f", self._run_name], check=False, capture_output=True)
+
+        events = []
+        if self._stdout_path and os.path.exists(self._stdout_path):
+            with open(self._stdout_path, "r", encoding="utf-8", errors="replace") as f:
+                for line in f:
+                    try:
+                        payload = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    if not isinstance(payload, dict):
+                        continue
+                    if not self._matches_container(payload):
+                        continue
+                    try:
+                        events.append(SyscallEvent.from_mapping(payload))
+                    except (TypeError, ValueError):
+                        continue
+        
         self._remove_output_files()
         self.process = None
-        events = []
-        for line in stdout.splitlines():
-            try:
-                payload = json.loads(line)
-            except json.JSONDecodeError:
-                print(f"JSON DECODE ERROR OCCURED for {line} \n")
-                continue
-            if not isinstance(payload, dict):
-                print(f"NOT A DICT INSTANCE ERROR for {line} \n")
-                continue
-            if not self._matches_container(payload):
-                continue
-            try:
-                events.append(SyscallEvent.from_mapping(payload))
-            except (TypeError, ValueError):
-                continue
         return events
 
     def _wait_until_ready(self) -> None:
@@ -137,16 +151,26 @@ class TraceeCollector:
                 raise TraceeError(f"Tracee exited during startup: {stderr.strip()}")
             stderr = self._read_output(self._stderr_path)
             elapsed = time.monotonic() - started
-            if self._looks_ready(stderr):
+            if self._looks_ready(stderr) or self._health_ready():
                 saw_ready = True
             if saw_ready and elapsed >= self.startup_settle:
-                return
-            if elapsed >= max(self.startup_settle, 8.0) and self.process.poll() is None:
                 return
             time.sleep(0.1)
         if self.process.poll() is not None:
             stderr = self._read_output(self._stderr_path)
             raise TraceeError(f"Tracee exited during startup: {stderr.strip()}")
+        raise TraceeError(
+            f"Tracee did not become ready within {self.startup_timeout}s"
+        )
+
+    def _health_ready(self) -> bool:
+        try:
+            with urllib.request.urlopen(
+                f"http://127.0.0.1:{self.health_port}/healthz", timeout=0.5
+            ) as response:
+                return 200 <= response.status < 300
+        except (OSError, urllib.error.URLError):
+            return False
 
     @staticmethod
     def _looks_ready(stderr: str) -> bool:

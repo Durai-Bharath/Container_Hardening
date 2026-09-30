@@ -1,0 +1,97 @@
+Updated todo list
+
+Run from the repository root.
+
+## Time-Window Ablations
+
+```bash
+mkdir -p ablation-reports
+
+for feature in frequency bigram combined; do
+  for segmentation in sustained first pht bocpd; do
+    python3 -m running_phase_ablation.main \
+      --running-trace traces/nginx_test_discovery_trace.jsonl \
+      --feature-mode "$feature" \
+      --segmentation-mode "$segmentation" \
+      --window-mode time \
+      --window-seconds 0.001 \
+      --similarity-threshold 0.8 \
+      --stabilization-seconds 5 \
+      --change-point-min-samples 10 \
+      --pht-delta 0.0 \
+      --bocpd-hazard 0.01 \
+      --output "ablation-reports/nginx_${feature}_${segmentation}_time.json"
+  done
+done
+```
+
+This runs:
+
+```text
+frequency + sustained
+frequency + first
+frequency + pht
+frequency + bocpd
+
+bigram + sustained
+bigram + first
+bigram + pht
+bigram + bocpd
+
+combined + sustained
+combined + first
+combined + pht
+combined + bocpd
+```
+
+## Count-Window Ablations: 100 Syscalls
+
+```bash
+mkdir -p ablation-reports
+
+for feature in frequency bigram combined; do
+  for segmentation in sustained first pht bocpd; do
+    python3 -m running_phase_ablation.main \
+      --running-trace traces/nginx_test_discovery_trace.jsonl \
+      --feature-mode "$feature" \
+      --segmentation-mode "$segmentation" \
+      --window-mode count \
+      --events-per-window 100 \
+      --stabilization-windows 5 \
+      --change-point-min-samples 10 \
+      --pht-delta 0.0 \
+      --bocpd-hazard 0.01 \
+      --output "ablation-reports/nginx_${feature}_${segmentation}_count100.json"
+  done
+done
+```
+
+## Count-Window Ablations: 50 Syscalls
+
+```bash
+mkdir -p ablation-reports
+
+for feature in frequency bigram combined; do
+  for segmentation in sustained first pht bocpd; do
+    python3 -m running_phase_ablation.main \
+      --running-trace traces/nginx_test_discovery_trace.jsonl \
+      --feature-mode "$feature" \
+      --segmentation-mode "$segmentation" \
+      --window-mode count \
+      --events-per-window 50 \
+      --stabilization-windows 5 \
+      --change-point-min-samples 10 \
+      --pht-delta 0.0 \
+      --bocpd-hazard 0.01 \
+      --output "ablation-reports/nginx_${feature}_${segmentation}_count50.json"
+  done
+done
+```
+
+Generated profiles are stored automatically under:
+
+```text
+running-seccomp-ablation/
+```
+
+Use `--include-windows` only when you need full per-window vectors; it uses substantially more memory.

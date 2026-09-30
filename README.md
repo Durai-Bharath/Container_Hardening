@@ -1,26 +1,36 @@
-# Static syscall analyzer
+# Phase-Based Container Syscall Security
 
-This repository implements a static syscall analysis module for modern Linux ELF binaries, following the same broad design idea as Confine:
+This repository implements a three-phase syscall policy workflow inspired by
+the paper *Enhancing Container Security Through Phase-Based System Call
+Filtering*:
 
-- discover relevant ELF files in an extracted filesystem
+- **Static analysis** produces S-SF, the static syscall set.
+- **Dynamic analysis** produces D-SF, the runtime-observed syscall set, and
+  I-SF = S-SF union D-SF.
+- **Running-phase analysis** identifies a steady-state boundary and produces
+  R-SF, the syscall set observed after that boundary.
+
+Static analysis is offline. Dynamic analysis uses Tracee/eBPF and Docker. The
+repository generates OCI seccomp profiles, but does not yet perform live policy
+switching inside a running container.
+
+## Relationship To The Paper And Confine
+
+The static phase is a modern Confine-style implementation:
+
+- discover ELF binaries
 - extract imported functions
-- map imported functions through a libc call graph to syscall numbers
-- inspect executable instructions for direct `syscall` instructions
-- union the results while preserving the source of each syscall
+- map libc functions through glibc/musl call graphs
+- detect resolvable direct `syscall` instructions
+- combine direct and indirect results into S-SF
 
-Important: this is a static-only analyzer. It does not run the binary, does not monitor a container at runtime, and does not depend on dynamic tracing. That makes it suitable for offline research of an extracted rootfs or application directory.
-
-## Relationship to Confine
-
-This implementation is conceptually aligned with Confine:
-
-- identify ELF binaries
-- collect imported libc functions
-- map those functions through a glibc/musl call graph
-- identify direct machine-code syscalls
-- combine both sets for a final static syscall set
-
-However, it is not a blind copy of the legacy Confine code. It is redesigned for modern Linux/x86-64, uses ELF parsing via pyelftools, disassembly via Capstone, and keeps the data model source-aware (direct vs indirect).
+This is not an exact reproduction of the paper. The paper describes
+crash-driven dynamic supplementation under restrictive policies, collection of
+syscall context, and live phase-aware policy switching. This implementation
+uses Tracee observations under `SCMP_ACT_LOG`, performs running-phase analysis
+offline, and writes profiles for later use. It follows the paper's
+S-SF/D-SF/I-SF/R-SF model and objective, but its runtime enforcement is not yet
+implemented.
 
 ## Requirements
 
@@ -72,81 +82,168 @@ Example output sections:
 - `FINAL STATIC SYSCALL SET`
 - summary counts
 
-## Dynamic and running-phase profiling
+## Three-Phase Workflow
 
-The `dynamic_phase/` package consumes newline-delimited JSON syscall events. This
-keeps the profiling and segmentation algorithms independent of the event collector;
-an eBPF/BCC or libbpf agent can emit the same schema later.
+The commands below use Nginx as an example. Replace the image and paths for
+Redis or HTTPD. Static analysis must be run against an extracted rootfs or
+application directory; it does not inspect a Docker image automatically.
 
-Each event requires `timestamp` (or `time`) and `syscall` (or `name`). Optional
-fields are `number`, `arguments` (or `args`), `pid`, and `process` (or `comm`).
-Events are sorted by timestamp before processing.
-
-Run dynamic profiling only from an existing Tracee JSONL trace:
+### 1. Static Phase: S-SF
 
 ```bash
-python3 -m dynamic_phase.main \
-  --trace syscall_events.jsonl \
-  --static-report static_syscall_report.json \
-  --output dynamic_phase_report.json
+python3 static_analyzer.py \
+  --input ./extracted_rootfs \
+  --json-out nginx_static_report.json \
+  --text-out nginx_static_report.txt \
+  --seccomp-out static-seccomp/nginx_seccomp.json
 ```
 
-Run running-phase segmentation separately from the same trace:
+This writes the static evidence, S-SF, and an enforcing static OCI profile.
+
+### 2. Dynamic Phase: D-SF And I-SF
+
+The crash loop starts Tracee before each target container, runs the registered
+workload, filters events by target container ID, and repeats until two clean
+passes add no new syscalls.
 
 ```bash
-python3 -m dynamic_phase.main \
-  --running-trace syscall_events.jsonl \
-  --output running_phase_report.json \
+python3 dynamic_phase_crash_loop/crash_loop.py \
+  --image nginx:latest \
+  --static-seccomp static-seccomp/nginx_seccomp.json \
+  --config dynamic_phase_crash_loop/workload-runner/workloads.yaml \
+  --output nginx_dynamic_report.json \
+  --clean-passes 2 \
+  --max-iterations 10
+```
+
+The report contains S-SF in `static_syscalls`, complete runtime D-SF in
+`dynamic_syscalls` including overlap with S-SF, per-pass additions in
+`added_syscalls`, and I-SF in `initialize_syscalls`. It also records the
+generated profile paths in `dynamic_seccomp_profile` and
+`initialize_seccomp_profile`.
+
+The command writes two enforcing profiles:
+
+- `dynamic-seccomp/nginx_seccomp.json`: D-SF only
+- `initialize-seccomp/nginx_seccomp.json`: I-SF = S-SF union D-SF
+
+The registry maps Nginx/HTTPD to `wrk` and Redis to `redis-benchmark`.
+
+### 3. Running Phase: R-SF
+
+Running analysis consumes an existing newline-delimited Tracee JSONL trace. It
+uses fixed windows, syscall-frequency vectors, adjacent-window cosine
+similarity, and a sustained similarity threshold to find the running boundary.
+
+```bash
+python3 -m running_phase.main \
+  --running-trace nginx_trace.jsonl \
+  --output nginx_running_phase_report.json \
+  --window-seconds 0.001 \
+  --similarity-threshold 0.8 \
+  --stabilization-seconds 5 \
+  --seccomp-output running-seccomp/nginx_seccomp.json
+```
+
+This writes the segmentation result and R-SF profile. The crash-loop report
+does not currently export its raw Tracee JSONL, so provide a separately
+captured trace for this phase.
+
+## Running-Phase Ablation Study
+
+The existing `running_phase/` implementation is unchanged. Ablation experiments
+use the separate `running_phase_ablation/` package, which supports:
+
+- `frequency`: syscall-frequency features only
+- `bigram`: syscall-transition features only
+- `combined`: concatenated frequency and bigram features
+
+Segmentation can use the paper-style sustained threshold, the first matching
+similarity threshold. Windows can be wall-clock based or fixed-size syscall
+count windows. Count windows avoid nearly empty windows during idle periods and
+provide enough events for meaningful bigram distributions. For example:
+
+```bash
+python3 -m running_phase_ablation.main \
+  --running-trace nginx_trace.jsonl \
+  --feature-mode combined \
+  --segmentation-mode sustained \
+  --output ablation-reports/nginx_combined_report.json \
   --window-seconds 0.001 \
   --similarity-threshold 0.8 \
   --stabilization-seconds 5
 ```
 
-Running-phase segmentation follows the paper's similarity-based method. It
- uses only syscall frequency vectors, compares adjacent windows, and selects
- the end of the first sustained stabilization interval whose cosine similarity
- remains at or above `0.8`. The stabilization interval defaults to five
- seconds; there is no adaptive change-point or warm-up parameter. The command
- writes the JSON report and an OCI seccomp profile to
- `running-seccomp/<report-name>_seccomp.json` (or to `--seccomp-output` when
- provided).
-
-Run the real Docker/Tracee dynamic analysis directly against an image:
+Run the other feature variants by changing `--feature-mode` to `frequency` or
+`bigram`. Use count-based windows with:
 
 ```bash
-python3 -m dynamic_phase.main \
-  --image nginx:latest \
-  --command "nginx -g 'daemon off;'" \
-  --static-report static_syscall_report.json \
-  --output dynamic_phase_report.json \
-  --max-iterations 10 \
-  --timeout 60
+python3 -m running_phase_ablation.main \
+  --running-trace traces/nginx_test_discovery_trace.jsonl \
+  --feature-mode combined \
+  --segmentation-mode sustained \
+  --window-mode count \
+  --events-per-window 100 \
+  --stabilization-windows 5 \
+  --output ablation-reports/nginx_combined_count100_report.json
 ```
 
-`--timeout` is the per-run profiling window, not a crash. Workloads such as
-`nginx -g 'daemon off;'` never exit, so the window always ends with the
-container still running. A new iteration is started only when Tracee observed a
-syscall that is not already in the candidate allowlist. If that set is already
-complete, the report correctly contains a single iteration.
+Profiles are isolated from the standard running-phase outputs under:
 
-For hosts where Docker requires `sudo`, pass the complete command prefix:
+```text
+running-seccomp-ablation/<window-mode>/<window-size>/<feature-mode>/<segmentation-mode>/
+```
+
+For count-mode profiles using 100 events per window:
+
+```text
+running-seccomp-ablation/count/100/<feature-mode>/<segmentation-mode>/
+```
+
+Use `--seccomp-output` to override that location for a particular experiment.
+Each ablation report records the feature mode, segmentation mode, window mode,
+events per window, feature vocabularies, per-window frequency and bigram
+vectors, similarities, the segmentation point, R-SF, and the generated profile
+path. Reports are compact by default and record `window_count` instead of every
+window vector. Add `--include-windows` when full per-window vectors are needed;
+this can consume substantial memory for large traces. In count mode,
+`--stabilization-windows` controls how many consecutive similar windows are
+required by sustained segmentation.
+
+Adaptive change-point modes are also available:
 
 ```bash
-python3 -m dynamic_phase.main \
-  --image nginx:latest \
-  --command "nginx -g 'daemon off;'" \
-  --static-report static_syscall_report.json \
-  --docker-command "sudo docker"
+python3 -m running_phase_ablation.main \
+  --running-trace traces/nginx_test_discovery_trace.jsonl \
+  --feature-mode combined \
+  --segmentation-mode pht \
+  --window-mode count \
+  --events-per-window 100 \
+  --change-point-min-samples 10 \
+  --output ablation-reports/nginx_combined_pht_report.json
 ```
 
-The controller starts Tracee first (`--scope container=new`, with the Docker
-socket mounted so container IDs can be resolved), then creates the target with
-the candidate OCI profile. That order captures initialization syscalls; attaching
-Tracee after the target is already running misses them and makes the loop stop
-at iteration 1. After the profiling window, the container is removed and rebuilt
-only when the trace contains a syscall outside the current allowlist. A failed
-run with no missing observed syscall is reported as unresolved instead of
-blindly widening the profile.
+Use `--segmentation-mode bocpd` for the Bayesian predictive change-score
+variant. PHT and BOCPD report `adaptive_threshold` and `change_point_score`.
+PHT is most sensitive to a downward shift in dissimilarity, while BOCPD can
+respond to either direction. The BOCPD implementation uses a bounded online
+predictive approximation to avoid retaining an unbounded run-length history.
+
+For hosts where Tracee's Docker command requires a prefix, add:
+
+```bash
+--tracee-docker-command "sudo docker"
+```
+
+The workload runner itself invokes `docker` directly, so Docker access must be
+configured for the invoking user.
+
+## Legacy Trace-Based Profiling
+
+The reusable `dynamic_phase/` and `running_phase/` packages consume
+newline-delimited JSON syscall events. Each event requires `timestamp` (or
+`time`) and `syscall` (or `name`). Optional fields are `number`, `arguments`
+(`args`), `pid`, and `process` (`comm`). Events are sorted by timestamp.
 
 Run the opt-in real integration test with:
 
@@ -154,13 +251,8 @@ Run the opt-in real integration test with:
 RUN_TRACE_INTEGRATION=1 pytest -q tests/test_tracee_integration.py
 ```
 
-The dynamic report contains only the observed runtime syscall set (D-SF) and
-the static/runtime initialization union (I-SF). The running-phase report
- The running-phase report contains time windows, frequency features,
- dissimilarity scores, the sustained cosine-similarity segmentation point, and
- the steady-state syscall set (R-SF). This separation also allows the
- running-phase algorithm to be tested against captured traces without rerunning
- Docker or Tracee.
+The three-phase workflow above is the supported end-to-end path. These lower
+level packages remain useful for tests and for externally captured traces.
 
 ## Notes on correctness
 
@@ -170,6 +262,11 @@ The implementation is intentionally conservative:
 - unresolved direct syscall instructions are preserved as evidence instead of guessed
 - callgraph traversal follows reachable nodes while guarding against cycles and loops
 - the final static syscall set is deduplicated, but the evidence for each syscall remains available
+- static analysis is ELF/rootfs analysis and does not automatically inspect a Docker image
+- failed or unreadable ELF files must be investigated; runtime discovery cannot prove that an unexercised path is safe
+- D-SF and R-SF depend on the workload commands and duration used during collection
+- the current dynamic phase uses Tracee observation under `SCMP_ACT_LOG`, not the paper's crash-driven restrictive retry loop
+- the current running phase writes an R-SF profile but does not switch seccomp policy live at the detected boundary
 
 ## Example: nginx validation
 

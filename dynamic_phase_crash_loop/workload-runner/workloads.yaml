@@ -1,0 +1,43 @@
+# Workload registry: maps an image pattern to how it should be exercised.
+#
+# match:        regex tested against the image name/tag you pass in
+# port:         port the target container listens on
+# tool:         which benchmarking tool to use (wrk | redis-benchmark | sysbench)
+# tool_image:   docker image that provides the tool (so it doesn't need to be
+#               installed on the host) — these are small, official/common images
+# prepare_cmd:  optional command(s) run once before benchmarking (e.g. sysbench
+#               "prepare" step to create test tables). {host} is the target's
+#               network alias, {port} is the target port.
+# bench_cmd:    the actual benchmark command template
+# cleanup_cmd:  optional command run after benchmarking (e.g. sysbench "cleanup")
+
+workloads:
+
+  - match: "nginx|httpd|caddy|node|traefik"
+    port: 80
+    tool: wrk
+    tool_image: "williamyeh/wrk"
+    shell: false
+    bench_cmd: "-t4 -c100 -d30s http://{host}:{port}/"
+
+  - match: "redis"
+    port: 6379
+    tool: redis-benchmark
+    tool_image: "redis:7-alpine"
+    bench_cmd: "redis-benchmark -h {host} -p {port} -q -t set,get,lpush,lpop -n 100000 -c 50"
+
+  - match: "postgres"
+    port: 5432
+    tool: sysbench
+    tool_image: "severalnines/sysbench"
+    prepare_cmd: >
+      sysbench oltp_read_write --db-driver=pgsql --pgsql-host={host} --pgsql-port={port}
+      --pgsql-user=postgres --pgsql-password=postgres --pgsql-db=test --tables=4
+      --table-size=10000 prepare
+    bench_cmd: >
+      sysbench oltp_read_write --db-driver=pgsql --pgsql-host={host} --pgsql-port={port}
+      --pgsql-user=postgres --pgsql-password=postgres --pgsql-db=test --tables=4
+      --table-size=10000 --threads=8 --time=30 run
+    cleanup_cmd: >
+      sysbench oltp_read_write --db-driver=pgsql --pgsql-host={host} --pgsql-port={port}
+      --pgsql-user=postgres --pgsql-password=postgres --pgsql-db=test --tables=4 cleanup

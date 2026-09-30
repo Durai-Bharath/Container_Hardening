@@ -1,0 +1,98 @@
+Updated todo list
+
+Run these six commands from the repository root.
+
+### 1. Frequency + Sustained
+
+```bash
+python3 -m running_phase_ablation.main \
+  --running-trace traces/nginx_test_discovery_trace.jsonl \
+  --output nginx_frequency_sustained_report.json \
+  --feature-mode frequency \
+  --segmentation-mode sustained \
+  --window-seconds 0.001 \
+  --similarity-threshold 0.8 \
+  --stabilization-seconds 5
+```
+
+### 2. Frequency + First
+
+```bash
+python3 -m running_phase_ablation.main \
+  --running-trace traces/nginx_test_discovery_trace.jsonl \
+  --output nginx_frequency_first_report.json \
+  --feature-mode frequency \
+  --segmentation-mode first \
+  --window-seconds 0.001 \
+  --similarity-threshold 0.8 \
+  --stabilization-seconds 5
+```
+
+### 3. Bigram + Sustained
+
+```bash
+python3 -m running_phase_ablation.main \
+  --running-trace traces/nginx_test_discovery_trace.jsonl \
+  --output nginx_bigram_sustained_report.json \
+  --feature-mode bigram \
+  --segmentation-mode sustained \
+  --window-seconds 0.001 \
+  --similarity-threshold 0.8 \
+  --stabilization-seconds 5
+```
+
+### 4. Bigram + First
+
+```bash
+python3 -m running_phase_ablation.main \
+  --running-trace traces/nginx_test_discovery_trace.jsonl \
+  --output nginx_bigram_first_report.json \
+  --feature-mode bigram \
+  --segmentation-mode first \
+  --window-seconds 0.001 \
+  --similarity-threshold 0.8 \
+  --stabilization-seconds 5
+```
+
+### 5. Combined + Sustained
+
+```bash
+python3 -m running_phase_ablation.main \
+  --running-trace traces/nginx_test_discovery_trace.jsonl \
+  --output nginx_combined_sustained_report.json \
+  --feature-mode combined \
+  --segmentation-mode sustained \
+  --window-seconds 0.001 \
+  --similarity-threshold 0.8 \
+  --stabilization-seconds 5
+```
+
+### 6. Combined + First
+
+```bash
+python3 -m running_phase_ablation.main \
+  --running-trace traces/nginx_test_discovery_trace.jsonl \
+  --output nginx_combined_first_report.json \
+  --feature-mode combined \
+  --segmentation-mode first \
+  --window-seconds 0.001 \
+  --similarity-threshold 0.8 \
+  --stabilization-seconds 5
+```
+
+Profiles are generated automatically under:
+
+```text
+running-seccomp-ablation/
+├── frequency/
+│   ├── sustained/
+│   └── first/
+├── bigram/
+│   ├── sustained/
+│   └── first/
+└── combined/
+    ├── sustained/
+    └── first/
+```
+
+Each report contains the segmentation point, similarity values, running syscall set, feature vocabularies, windows, and generated profile path.

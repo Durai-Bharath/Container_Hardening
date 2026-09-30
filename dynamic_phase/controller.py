@@ -21,7 +21,7 @@ class DynamicIteration:
     observed_syscalls: tuple[str, ...]
     exit_code: int
     timed_out: bool
-    added_syscall: str | None
+    added_syscalls: tuple[str, ...]
     logs: str
 
 
@@ -95,6 +95,8 @@ class DynamicAnalysisController:
                     f"restricted container exited with code {validation_result.exit_code}"
                 )
         observed.update(validation_observed)
+        missing.update(validation_missing)
+        initialize.update(validation_observed)
         return DynamicAnalysisResult(
             dynamic_syscalls=tuple(sorted(observed)),
             initialize_syscalls=tuple(sorted(initialize)),
@@ -119,7 +121,7 @@ class DynamicAnalysisController:
             observed_syscalls=tuple(sorted(observed)),
             exit_code=result.exit_code,
             timed_out=result.timed_out,
-            added_syscall=sorted(missing)[0] if missing else None,
+            added_syscalls=tuple(sorted(missing)),
             logs=result.logs,
         )
 
@@ -135,7 +137,7 @@ class DynamicAnalysisController:
         try:
             collector.start(container_id)
             self.runner.start(container_id)
-            result = self.runner.wait(container_id, self.timeout, remove=False) # Doubt
+            result = self.runner.wait(container_id, self.timeout)
             events = collector.stop()
             self.runner.remove(container_id)
             return result, events

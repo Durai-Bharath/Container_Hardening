@@ -13,3 +13,16 @@ python3 -m running_phase.main \
   --window-seconds 0.1 \
   --similarity-threshold 0.8 \
   --stabilization-seconds 5
+
+
+
+python3 dynamic_phase_crash_loop/crash_loop.py \
+--image mysql:8 \
+--static-seccomp static-seccomp/mysql_seccomp.json \
+--output /tmp/mysql_tracee_dynamic_report.json \
+--config dynamic_phase_crash_loop/workload-runner/workloads.yaml \
+--env MYSQL_ROOT_PASSWORD=root \
+--clean-passes 2 \
+--max-iterations 6 \
+--readiness-timeout 90 \
+--workload-timeout 120
